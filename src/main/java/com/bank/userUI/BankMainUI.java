@@ -1,5 +1,6 @@
 package com.bank.userUI;
 
+import java.util.InputMismatchException;
 import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,11 +33,20 @@ public class BankMainUI {
 			switch (Utility.userInput().nextLine()) {
 
 			case ("1"):
-				openNewAccount();
+				depositOrWithdraw(true);
 				break;
 			case ("2"):
-				proceed = false;
+				depositOrWithdraw(false);
 				break;
+			case ("3"):
+				transfer();
+				break;		
+			case ("4"):
+				openNewAccount();
+				break;
+			case ("5"):
+				proceed = false;
+				break;	
 			default:
 				Utility.log().info("no such option");
 				accountListText();
@@ -47,6 +57,97 @@ public class BankMainUI {
 	
 	private void openNewAccount() {
 		bank.getClient(loginForm).getAccountsList().add(new AccountImpl());
+		accountListText();
+		menuText();
+	}
+	
+	private void depositOrWithdraw(boolean deposit) {
+
+		String accountName;
+		double amount = 0;
+
+		if (deposit)
+			Utility.log().info("Enter name of the account for money deposit");
+		else
+			Utility.log().info("Enter name of the account for money withdraw");
+
+		accountName = Utility.userInput().nextLine();
+
+		try {
+
+			if (deposit)
+				Utility.log().info("Enter the amount of money to deposit");
+			else
+				Utility.log().info("Enter the amount of money to withdraw");
+
+			amount = Utility.userInput().nextDouble();
+
+			for (Account a : bank.getClient(loginForm).getAccountsList())
+				if (a.getAccountName().equals(accountName)) {
+					if (deposit) {
+						if (!a.deposit(amount))
+							Utility.log().info("Error - Cannot deposit negative amount");
+					} else if (!a.withdraw(amount))
+						Utility.log().info("Error - Insufficient funds or negative value passed as amount");
+				}
+
+		} catch (InputMismatchException e) {
+			Utility.log().info("Error - Wrong input. Enter a valid amount of money");
+		}
+
+		if (!bank.getClient(loginForm).getAccountsList().stream().anyMatch(a -> a.getAccountName().equals(accountName)))
+			Utility.log().info("Error - Wrong account name");
+
+		accountListText();
+		menuText();
+	}
+	
+	private void transfer() {
+
+		String senderAccountName;
+		String recipientAccountName;
+		boolean success = true;
+		double amount = 0;
+
+		Utility.log().info("Enter name of the 'SENDER' account");
+		senderAccountName = Utility.userInput().nextLine();
+
+		Utility.log().info("Enter name of the 'RECIPIENT' account");
+		recipientAccountName = Utility.userInput().nextLine();
+
+		try {
+			Utility.log().info("Enter the amount of money to transfer");
+			amount = Utility.userInput().nextDouble();
+
+			if (bank.getClient(loginForm).getAccountsList().stream()
+					.anyMatch(a -> a.getAccountName().equals(senderAccountName))
+					&& bank.getClient(loginForm).getAccountsList().stream()
+							.anyMatch(a -> a.getAccountName().equals(recipientAccountName))) {
+
+				for (Account a : bank.getClient(loginForm).getAccountsList()) {
+					if (a.getAccountName().equals(senderAccountName))
+						if (!a.withdraw(amount)) {
+							Utility.log().info("Error - Insufficient funds or negative value passed as amount");
+							success = false;
+						}
+				}
+
+				if (success) {
+					for (Account a : bank.getClient(loginForm).getAccountsList()) {
+						if (a.getAccountName().equals(recipientAccountName))
+							a.deposit(amount);
+					}
+				}
+
+			}
+		} catch (InputMismatchException e) {
+			Utility.log().info("Error - Wrong input. Enter a valid amount of money");
+		}
+		
+		if (!bank.getClient(loginForm).getAccountsList().stream().anyMatch(a -> a.getAccountName().equals(senderAccountName)) 
+				|| !bank.getClient(loginForm).getAccountsList().stream().anyMatch(a -> a.getAccountName().equals(recipientAccountName)))
+			Utility.log().info("Error - At least one account name is wrong");
+		
 		accountListText();
 		menuText();
 	}
@@ -77,8 +178,11 @@ public class BankMainUI {
 		Utility.log().info("+---------------------------------------------+");
 		Utility.log().info("|                  Main Menu                  |");
 		Utility.log().info("+---------------------------------------------+");
-		Utility.log().info("| 1. Open new account                         |");
-		Utility.log().info("| 2. Quit                                     |");
+		Utility.log().info("| 1. Deposit                                  |");
+		Utility.log().info("| 2. Withdraw                                 |");
+		Utility.log().info("| 3. Transfer                                 |");
+		Utility.log().info("| 4. Open new account                         |");
+		Utility.log().info("| 5. Quit                                     |");
 		Utility.log().info("| Wait for next commit to see more actions :) |");
 		Utility.log().info("+---------------------------------------------+");
 	}

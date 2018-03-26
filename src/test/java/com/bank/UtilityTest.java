@@ -100,4 +100,16 @@ public class UtilityTest {
 		assertFalse(utility.validateRegex(nullPassword, utility.getValidPasswordRegex()));
 	}
 	
+//	@SuppressWarnings("static-access")
+//	@Test
+//	public void validateDoubleFromString() {
+//		
+//		String validString = "123.450";
+//		//String validString2 = "0,45";
+//		
+//		assertTrue(utility.validateRegex(validString, utility.getValidDoubleFromStringRegex()));
+//		//assertTrue(utility.validateRegex(validString2, utility.getValidDoubleFromStringRegex()));
+//		
+//	}
+	
 }
