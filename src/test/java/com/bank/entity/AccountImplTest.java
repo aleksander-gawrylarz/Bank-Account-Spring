@@ -125,5 +125,20 @@ public class AccountImplTest {
 		double amountToWithdraw = -312.87;
 		assertFalse(account.withdraw(amountToWithdraw));
 	}
+	
+	@Test
+	public void currencyForNewAccountIsEmpty() {
+		assertTrue(account.getCurrency().isEmpty());
+	}
+	
+	@Test
+	public void whenCurrencyForAccountHasBeenSetThanCannotBeChanged() {
+		
+		assertTrue(account.setCurrency("PLN"));
+		assertTrue(account.getCurrency().equals("PLN"));
+		
+		assertFalse(account.setCurrency("EUR"));
+		assertFalse(account.getCurrency().equals("EUR"));
+	}
 
 }

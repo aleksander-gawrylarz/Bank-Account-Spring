@@ -29,6 +29,7 @@ public class Client {
 		this.password = password;
 		
 		accountsList.add(new AccountImpl());
+		accountsList.get(0).setCurrency("PLN");
 	}
 
 	public boolean validateUserName(char[] toValidate) {

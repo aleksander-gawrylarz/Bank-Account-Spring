@@ -20,4 +20,8 @@ public interface Account {
 	
 	public double withdrawAll();
 	
+	public String getCurrency();
+	
+	public boolean setCurrency(String currency);
+	
 }

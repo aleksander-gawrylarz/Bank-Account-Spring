@@ -19,8 +19,6 @@ public abstract class Utility {
 	
 	private static final Pattern VALID_PASSWORD_REGEX = Pattern.compile("^[A-Za-z\\d_!@#$%^&*]{4,25}$");
 	
-	//private static final Pattern VALID_DOUBLE_FROM_STRING_REGEX = Pattern.compile("\\d+[,\\.]\\d{2}");
-
 	public static boolean validateRegex(String line, Pattern pattern) {
 		if (line != null) {
 			Matcher matcher = pattern.matcher(line);
@@ -53,7 +51,4 @@ public abstract class Utility {
 		return VALID_PASSWORD_REGEX;
 	}
 
-//	public static Pattern getValidDoubleFromStringRegex() {
-//		return VALID_DOUBLE_FROM_STRING_REGEX;
-//	}
 }

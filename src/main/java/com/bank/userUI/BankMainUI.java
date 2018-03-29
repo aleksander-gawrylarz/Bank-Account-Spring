@@ -1,16 +1,17 @@
 package com.bank.userUI;
 
+import java.util.ArrayList;
 import java.util.InputMismatchException;
-import java.util.NoSuchElementException;
+import java.util.List;
+import java.util.Scanner;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.bank.Utility;
-import com.bank.entity.Account;
-import com.bank.entity.AccountImpl;
-import com.bank.entity.Bank;
-import com.bank.form.LoginForm;
+import com.bank.service.CashService;
+import com.bank.service.CheckingAccountService;
+import com.bank.service.TransferService;
 
 @Component
 public class BankMainUI {
@@ -18,50 +19,71 @@ public class BankMainUI {
 	public static boolean proceed = true;
 	
 	@Autowired
-	private Bank bank;
+	private CashService cashService;
 	
 	@Autowired
-	private LoginForm loginForm;
+	private TransferService transferService;
+	
+	@Autowired
+	private CheckingAccountService checkingAccountService;
+	
+	@Autowired
+	private LoginUI loginUI;
+	
+	@Autowired
+	private View view;
 
-	public void bankMainPage() {
+	public void bankMainPage(Scanner scanner) {
 		LoginUI.proceed = false;
-		accountListText();
-		menuText();
+		view.accountListText();
+		view.menuText();
 		
 		while (proceed) {
 
-			switch (Utility.userInput().nextLine()) {
+			switch (scanner.nextLine()) {
 
 			case ("1"):
-				depositOrWithdraw(true);
+				cashService.deposit(inputForDeposit(true));
 				break;
 			case ("2"):
-				depositOrWithdraw(false);
+				cashService.withdraw(inputForDeposit(false));
 				break;
 			case ("3"):
-				transfer();
+				transferService.transfer(inputForTransfer());
 				break;		
 			case ("4"):
-				openNewAccount();
+				checkingAccountService.createNewAccount(whatCurrency());
 				break;
 			case ("5"):
 				proceed = false;
+				LoginUI.proceed = true;
+				loginUI.loginPage(Utility.userInput());
 				break;	
 			default:
 				Utility.log().info("no such option");
-				accountListText();
-				menuText();
+				view.accountListText();
+				view.menuText();
 			}
 		}
 	}
 	
-	private void openNewAccount() {
-		bank.getClient(loginForm).getAccountsList().add(new AccountImpl());
-		accountListText();
-		menuText();
+	private String whatCurrency() {
+		
+		String currency = "";
+		
+		do {
+		Utility.log().info("Enter currency for the new account: PLN , EUR , USD");
+		currency = Utility.userInput().nextLine().toUpperCase();
+		} while (!currency.equals("PLN") && !currency.equals("EUR") && !currency.equals("USD"));
+		
+		return currency;
 	}
 	
-	private void depositOrWithdraw(boolean deposit) {
+	private List<String> inputForDeposit(boolean deposit) {
+
+		List<String> userInput = new ArrayList<>();
+		userInput.add("Wrong-Account-Name");
+		userInput.add("0");
 
 		String accountName;
 		double amount = 0;
@@ -72,119 +94,52 @@ public class BankMainUI {
 			Utility.log().info("Enter name of the account for money withdraw");
 
 		accountName = Utility.userInput().nextLine();
+		userInput.set(0, accountName);
 
 		try {
-
 			if (deposit)
 				Utility.log().info("Enter the amount of money to deposit");
 			else
 				Utility.log().info("Enter the amount of money to withdraw");
-
+			
 			amount = Utility.userInput().nextDouble();
-
-			for (Account a : bank.getClient(loginForm).getAccountsList())
-				if (a.getAccountName().equals(accountName)) {
-					if (deposit) {
-						if (!a.deposit(amount))
-							Utility.log().info("Error - Cannot deposit negative amount");
-					} else if (!a.withdraw(amount))
-						Utility.log().info("Error - Insufficient funds or negative value passed as amount");
-				}
-
+			userInput.set(1, Double.toString(amount));
+			
 		} catch (InputMismatchException e) {
 			Utility.log().info("Error - Wrong input. Enter a valid amount of money");
 		}
 
-		if (!bank.getClient(loginForm).getAccountsList().stream().anyMatch(a -> a.getAccountName().equals(accountName)))
-			Utility.log().info("Error - Wrong account name");
-
-		accountListText();
-		menuText();
+		return userInput;
 	}
 	
-	private void transfer() {
+	private List<String> inputForTransfer() {
+
+		List<String> userInput = new ArrayList<>();
+		userInput.add("Wrong-Sender-Account-Name");
+		userInput.add("Wrong-Recipient-Account-Name");
+		userInput.add("0");
 
 		String senderAccountName;
 		String recipientAccountName;
-		boolean success = true;
 		double amount = 0;
 
 		Utility.log().info("Enter name of the 'SENDER' account");
 		senderAccountName = Utility.userInput().nextLine();
+		userInput.set(0, senderAccountName);
 
 		Utility.log().info("Enter name of the 'RECIPIENT' account");
 		recipientAccountName = Utility.userInput().nextLine();
+		userInput.set(1, recipientAccountName);
 
 		try {
 			Utility.log().info("Enter the amount of money to transfer");
 			amount = Utility.userInput().nextDouble();
-
-			if (bank.getClient(loginForm).getAccountsList().stream()
-					.anyMatch(a -> a.getAccountName().equals(senderAccountName))
-					&& bank.getClient(loginForm).getAccountsList().stream()
-							.anyMatch(a -> a.getAccountName().equals(recipientAccountName))) {
-
-				for (Account a : bank.getClient(loginForm).getAccountsList()) {
-					if (a.getAccountName().equals(senderAccountName))
-						if (!a.withdraw(amount)) {
-							Utility.log().info("Error - Insufficient funds or negative value passed as amount");
-							success = false;
-						}
-				}
-
-				if (success) {
-					for (Account a : bank.getClient(loginForm).getAccountsList()) {
-						if (a.getAccountName().equals(recipientAccountName))
-							a.deposit(amount);
-					}
-				}
-
-			}
+			userInput.set(2, Double.toString(amount));
 		} catch (InputMismatchException e) {
 			Utility.log().info("Error - Wrong input. Enter a valid amount of money");
 		}
-		
-		if (!bank.getClient(loginForm).getAccountsList().stream().anyMatch(a -> a.getAccountName().equals(senderAccountName)) 
-				|| !bank.getClient(loginForm).getAccountsList().stream().anyMatch(a -> a.getAccountName().equals(recipientAccountName)))
-			Utility.log().info("Error - At least one account name is wrong");
-		
-		accountListText();
-		menuText();
-	}
-	
-	private void accountListText() {
-		Utility.log().info("+-----------------------------------------------------------------------------+");
-		Utility.log().info("|                               Bank Main Page                                |");
-		Utility.log().info("+--------------------------------------------------------+--------------------+");
-		Utility.log().info("| List of your current Accounts     |    Account Name    |      Balance       |");
-		Utility.log().info("+-----------------------------------+--------------------+--------------------+");
-		printAccountsText();
-	}
-	
-	private void printAccountsText() {
-		try {
-			for (Account a : bank.getClient(loginForm).getAccountsList()) {
-				Utility.log().info("| " + a.displayAccountNo() + "  |     " + a.getAccountName() + "      | "
-						+ a.checkBalance());
-				Utility.log().info("+-----------------------------------|--------------------|--------------------+");
 
-			}
-		} catch (NoSuchElementException e) {
-			Utility.log().warn("Error when loading accounts list");
-		}
+		return userInput;
 	}
-	
-	private void menuText() {
-		Utility.log().info("+---------------------------------------------+");
-		Utility.log().info("|                  Main Menu                  |");
-		Utility.log().info("+---------------------------------------------+");
-		Utility.log().info("| 1. Deposit                                  |");
-		Utility.log().info("| 2. Withdraw                                 |");
-		Utility.log().info("| 3. Transfer                                 |");
-		Utility.log().info("| 4. Open new account                         |");
-		Utility.log().info("| 5. Quit                                     |");
-		Utility.log().info("| Wait for next commit to see more actions :) |");
-		Utility.log().info("+---------------------------------------------+");
-	}
-	
+
 }

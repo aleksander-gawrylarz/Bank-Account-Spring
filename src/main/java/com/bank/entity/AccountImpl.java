@@ -13,6 +13,8 @@ public class AccountImpl implements Account {
 	private String accountName;
 	private long balance;
 	
+	private String currency = "";
+	
 	public AccountImpl() {
 		balance = 0;
 		accountName = "Account "+Integer.toString(accountNameSuffix);
@@ -83,5 +85,19 @@ public class AccountImpl implements Account {
 		balance = 0;
 		return AllAmount;
 	}
-	
+
+	@Override
+	public String getCurrency() {
+		return currency;
+	}
+
+	@Override
+	public boolean setCurrency(String newCurrency) {
+		if (currency.isEmpty()) {
+			currency = newCurrency;
+			return true;
+		}
+		return false;
+	}
+		
 }

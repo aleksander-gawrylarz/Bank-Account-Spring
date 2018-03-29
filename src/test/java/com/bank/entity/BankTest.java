@@ -11,7 +11,6 @@ import org.junit.Test;
 
 import com.bank.form.LoginForm;
 
-
 public class BankTest {
 	
 	private Bank bank;

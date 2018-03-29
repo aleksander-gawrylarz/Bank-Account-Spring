@@ -1,10 +1,11 @@
 package com.bank.userUI;
 
+import java.util.Scanner;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.bank.Utility;
-import com.bank.entity.Bank;
 import com.bank.service.OpenAnAccountService;
 import com.bank.service.SignInService;
 
@@ -20,18 +21,19 @@ public class LoginUI {
 	private OpenAnAccountService openAnAccountService;
 	
 	@Autowired
-	private Bank bank;
+	private View view;
 	
-
-	public void loginPage() {
+	
+	public void loginPage(Scanner scanner) {
 		
-		loginPageText();
+		view.loginPageText();
 
 		while (proceed) {
 
-			switch (Utility.userInput().nextLine()) {
+			switch (scanner.nextLine()) {
 
 			case ("1"):
+				BankMainUI.proceed = true;
 				signIn();
 				break;
 			case ("2"):
@@ -42,7 +44,7 @@ public class LoginUI {
 				break;
 			default:
 				Utility.log().info("no such option");
-				loginPageText();
+				view.loginPageText();
 			}
 		}
 	}
@@ -53,12 +55,12 @@ public class LoginUI {
 		String tempPassword;
 
 		do {
-			Utility.log().info("Enter firstname (Should start with uppercase letter, only letters are allowed, minimum length is 2)");
+			Utility.log().info("Enter firstname (Should start with uppercase letter followed by lowercase letters. Only letters are allowed, minimum length is 2)");
 			openAnAccountService.enterFirstname(Utility.userInput().nextLine());
 		} while (!Utility.validateRegex(openAnAccountService.getOpenAnAccountForm().getFirstname(), Utility.getValidNameRegex()));
 		
 		do {
-			Utility.log().info("Enter lastname (Should start with uppercase letter, only letters are allowed, minimum length is 2)");
+			Utility.log().info("Enter lastname (Should start with uppercase letter followed by lowercase letters. Only letters are allowed, minimum length is 2)");
 			openAnAccountService.enterLastname(Utility.userInput().nextLine());
 		} while (!Utility.validateRegex(openAnAccountService.getOpenAnAccountForm().getLastname(), Utility.getValidNameRegex()));
 		
@@ -79,9 +81,9 @@ public class LoginUI {
 			openAnAccountService.enterPassword(tempPassword.toCharArray());
 		} while (!Utility.validateRegex(tempPassword, Utility.getValidPasswordRegex()));
 		
-		openAnAccountService.addNewClientToBank(openAnAccountService.getOpenAnAccountForm(), bank);
+		openAnAccountService.addNewClientToBank(openAnAccountService.getOpenAnAccountForm());
 
-		loginPageText();
+		view.loginPageText();
 	}
 	
 	private void signIn() {
@@ -92,15 +94,4 @@ public class LoginUI {
 		
 		signInService.signIn();
 	}
-	
-	private void loginPageText() {
-		Utility.log().info("+----------------------+");
-		Utility.log().info("| Welcome to myBank.pl |");
-		Utility.log().info("+----------------------+");
-		Utility.log().info("| 1. Sign In           |");
-		Utility.log().info("| 2. Open an Account   |");
-		Utility.log().info("| 3. Quit              |");
-		Utility.log().info("+----------------------+");
-	}
-	
 }

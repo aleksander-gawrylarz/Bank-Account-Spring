@@ -15,6 +15,6 @@ public class BankAccountApplication {
 		ApplicationContext applicationContext = SpringApplication.run(BankAccountApplication.class, args);
 		
 		LoginUI loginUI = applicationContext.getBean(LoginUI.class);
-		loginUI.loginPage();
+		loginUI.loginPage(Utility.userInput());
 	}
 }

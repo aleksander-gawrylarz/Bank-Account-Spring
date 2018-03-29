@@ -10,7 +10,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.bank.BankAccountApplication;
-import com.bank.entity.Bank;
+import com.bank.dao.BankDAO;
 import com.bank.entity.Client;
 import com.bank.form.OpenAnAccountForm;
 
@@ -25,11 +25,13 @@ public class OpenAnAccountServiceImplTest {
 	private OpenAnAccountForm openAnAccountForm;
 	
 	@Autowired
-	private Bank bank;
+	private BankDAO bankDAO;
 	
 	@Before
 	public void setUp() throws Exception {
 
+		bankDAO.getClients().clear();
+		
 		openAnAccountForm.setFirstname("Artur");
 		openAnAccountForm.setLastname("Bobas");
 		openAnAccountForm.setEmail("artibob@wp.pl");
@@ -41,20 +43,20 @@ public class OpenAnAccountServiceImplTest {
 	@Test
 	public void addingNewClientToEmptyBankShouldIncreaseClientSizeByOne() {
 		
-		openAnAccountService.addNewClientToBank(openAnAccountForm, bank);
+		openAnAccountService.addNewClientToBank(openAnAccountForm);
 		
-		assertEquals(1, bank.getClientList().size());
+		assertEquals(1, bankDAO.getClients().size());
 	}
 	
 	@Test
 	public void cannotAddClientWithSameEmailOrUsernameIfAlreadyExistInBank() {
 		
-		bank.getClientList().add(new Client("Tom", "Grass", "artibob@wp.pl",
+		bankDAO.getClients().add(new Client("Tom", "Grass", "artibob@wp.pl",
 				new char[] { 'a', 'r', 't', 'i', '9', '2' }, new char[] { 'p', 'a', 's', 's', '1', '6' }));
 		
-		openAnAccountService.addNewClientToBank(openAnAccountForm, bank);
+		openAnAccountService.addNewClientToBank(openAnAccountForm);
 		
-		assertEquals(1, bank.getClientList().size());
+		assertEquals(1, bankDAO.getClients().size());
 	}
 
 }

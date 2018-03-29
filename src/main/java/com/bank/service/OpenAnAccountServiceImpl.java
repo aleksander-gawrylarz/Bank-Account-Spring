@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.bank.Utility;
-import com.bank.entity.Bank;
+import com.bank.dao.BankDAO;
 import com.bank.entity.Client;
 import com.bank.form.OpenAnAccountForm;
 
@@ -14,13 +14,16 @@ public class OpenAnAccountServiceImpl implements OpenAnAccountService {
 	@Autowired
 	private OpenAnAccountForm openAnAccountForm;
 	
+	@Autowired
+	private BankDAO bankDAO;
+	
 	@Override
-	public void addNewClientToBank(OpenAnAccountForm clientForm, Bank bank) {
+	public void addNewClientToBank(OpenAnAccountForm clientForm) {
 
-		if (!bank.getClientList().stream().anyMatch(element -> element.validateUserName(clientForm.getUsername())
+		if (!bankDAO.getClients().stream().anyMatch(element -> element.validateUserName(clientForm.getUsername())
 				|| element.getEmail().equals(clientForm.getEmail()))) {
 
-			bank.getClientList().add(new Client(clientForm.getFirstname(), clientForm.getLastname(),
+			bankDAO.getClients().add(new Client(clientForm.getFirstname(), clientForm.getLastname(),
 					clientForm.getEmail(), clientForm.getUsername(), clientForm.getPassword()));
 			Utility.log().info("Your Account Has Been Created");
 		} else

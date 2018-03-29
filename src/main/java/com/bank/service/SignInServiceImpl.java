@@ -4,9 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.bank.Utility;
-import com.bank.entity.Bank;
+import com.bank.dao.BankDAO;
 import com.bank.form.LoginForm;
 import com.bank.userUI.BankMainUI;
+import com.bank.userUI.View;
 
 @Service
 public class SignInServiceImpl implements SignInService {
@@ -15,10 +16,13 @@ public class SignInServiceImpl implements SignInService {
 	private LoginForm loginForm;
 	
 	@Autowired
-	private Bank bank;
+	private BankDAO bankDAO;
 	
 	@Autowired
 	private BankMainUI bankMainUI;
+	
+	@Autowired
+	private View view;
 
 	@Override
 	public void enterUsername(String line) {
@@ -32,7 +36,6 @@ public class SignInServiceImpl implements SignInService {
 		
 		char[] password = line.toCharArray();
 		loginForm.setPassword(password);
-		
 	}
 
 	@Override
@@ -43,24 +46,13 @@ public class SignInServiceImpl implements SignInService {
 	@Override
 	public void signIn() {
 
-		if (bank.getClientList().stream()
+		if (bankDAO.getClients().stream()
 				.anyMatch(element -> element.validateUserName(getLoginForm().getUsername())
 						&& element.validatePassword(getLoginForm().getPassword())))
-			bankMainUI.bankMainPage();
+			bankMainUI.bankMainPage(Utility.userInput());
 		else {
 			Utility.log().info("Invalid username or password");
-			loginPageText();
+			view.loginPageText();
 		}
 	}
-	
-	private void loginPageText() {
-		Utility.log().info("+----------------------+");
-		Utility.log().info("| Welcome to myBank.pl |");
-		Utility.log().info("+----------------------+");
-		Utility.log().info("| 1. Sign In           |");
-		Utility.log().info("| 2. Open an Account   |");
-		Utility.log().info("| 3. Quit              |");
-		Utility.log().info("+----------------------+");
-	}
-	
 }

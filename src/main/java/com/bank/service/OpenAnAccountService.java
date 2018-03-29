@@ -1,6 +1,5 @@
 package com.bank.service;
 
-import com.bank.entity.Bank;
 import com.bank.form.OpenAnAccountForm;
 
 public interface OpenAnAccountService {
@@ -17,6 +16,6 @@ public interface OpenAnAccountService {
 	
 	public OpenAnAccountForm getOpenAnAccountForm();
 
-	public void addNewClientToBank(OpenAnAccountForm clientForm, Bank bank);
+	public void addNewClientToBank(OpenAnAccountForm clientForm);
 	
 }
