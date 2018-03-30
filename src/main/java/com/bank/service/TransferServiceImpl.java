@@ -37,9 +37,9 @@ public class TransferServiceImpl implements TransferService {
 					for (Account a : bankDAO.getClientAccounts()) {
 						if (a.getAccountName().equals(input.get(0)))
 							try {
-								if (!a.withdraw(Double.parseDouble(input.get(2)))) {
-									Utility.log().info("Error - Insufficient funds or negative value passed as amount");
-									success = false;
+							if (!a.withdraw(Double.parseDouble(input.get(2)))) {
+								Utility.log().info("Error - Insufficient funds or negative value passed as amount");
+								success = false;
 								}
 							} catch (NumberFormatException e) {
 							}
@@ -48,8 +48,8 @@ public class TransferServiceImpl implements TransferService {
 					if (success) {
 						for (Account a : bankDAO.getClientAccounts()) {
 							try {
-								if (a.getAccountName().equals(input.get(1)))
-									a.deposit(Double.parseDouble(input.get(2)));
+							if (a.getAccountName().equals(input.get(1)))
+								a.deposit(Double.parseDouble(input.get(2)));
 							} catch (NumberFormatException e) {
 							}
 						}
