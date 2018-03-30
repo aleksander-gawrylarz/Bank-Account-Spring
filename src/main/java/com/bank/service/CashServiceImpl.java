@@ -27,8 +27,8 @@ public class CashServiceImpl implements CashService {
 			for (Account a : bankDAO.getClientAccounts())
 				if (a.getAccountName().equals(input.get(0))) {
 					try {
-						if (!a.deposit(Double.parseDouble(input.get(1))))
-							Utility.log().info("Error - Cannot deposit negative amount");
+					if (!a.deposit(Double.parseDouble(input.get(1))))
+						Utility.log().info("Error - Cannot deposit negative amount");
 					} catch (NumberFormatException e) {
 					}
 				}
@@ -50,8 +50,8 @@ public class CashServiceImpl implements CashService {
 			for (Account a : bankDAO.getClientAccounts())
 				if (a.getAccountName().equals(input.get(0))) {
 					try {
-						if (!a.withdraw(Double.parseDouble(input.get(1))))
-							Utility.log().info("Error - Insufficient funds or negative value passed as amount");
+					if (!a.withdraw(Double.parseDouble(input.get(1))))
+						Utility.log().info("Error - Insufficient funds or negative value passed as amount");
 					} catch (NumberFormatException e) {
 					}
 				}
