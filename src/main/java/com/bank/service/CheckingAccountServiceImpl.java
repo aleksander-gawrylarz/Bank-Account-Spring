@@ -19,7 +19,7 @@ public class CheckingAccountServiceImpl implements CheckingAccountService {
 	@Override
 	public void createNewAccount(String currency) {
 		bankDAO.getClientAccounts().add(new AccountImpl());
-		bankDAO.getClientAccounts().get(bankDAO.getClientAccounts().size() - 1)
+		bankDAO.getClientAccounts().get(bankDAO.getClientAccounts().size()-1)
 				.setCurrency(currency);
 		view.accountListText();
 		view.menuText();

@@ -8,7 +8,7 @@ public interface SignInService {
 	
 	public void enterPassword(String password);
 	
-	public void signIn();
+	public boolean signIn();
 	
 	public LoginForm getLoginForm();
 

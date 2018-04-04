@@ -1,6 +1,7 @@
 package com.bank.service;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertFalse;
 
 import java.util.Arrays;
 
@@ -50,5 +51,4 @@ public class SignInServiceImplTest {
 		assertArrayEquals(loginForm.getPassword(), passwordCharArray);
 		assertFalse(Arrays.equals(loginForm.getPassword(), notValid));
 	}
-
 }

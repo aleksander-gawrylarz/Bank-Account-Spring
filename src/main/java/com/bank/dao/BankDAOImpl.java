@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import com.bank.entity.Account;
 import com.bank.entity.Bank;
 import com.bank.entity.Client;
+import com.bank.entity.Transaction;
 import com.bank.form.LoginForm;
 
 @Repository
@@ -15,6 +16,9 @@ public class BankDAOImpl implements BankDAO {
 	
 	@Autowired
 	private Bank bank;
+	
+	@Autowired
+	private CurrencyDAO currencyDAO;
 	
 	@Autowired
 	private LoginForm loginForm;
@@ -50,8 +54,17 @@ public class BankDAOImpl implements BankDAO {
 	}
 
 	@Override
-	public Client getClient() {
-		
-		return bank.getClient(loginForm);
+	public double getCurrencyValue(String currencyName) {
+		return currencyDAO.getCurrencyValue(currencyName);
+	}
+
+	@Override
+	public Account getAccountByName(String accountName) {
+		return getClientAccounts().stream().filter(a -> a.getAccountName().equals(accountName)).findFirst().get();
+	}
+
+	@Override
+	public List<Transaction> getClientTransactions() {
+		return bank.getClient(loginForm).getTranscationList();
 	}
 }

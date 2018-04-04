@@ -9,14 +9,14 @@ import com.bank.entity.Client;
 import com.bank.form.OpenAnAccountForm;
 
 @Service
-public class OpenAnAccountServiceImpl implements OpenAnAccountService {
-	
+public class OpenBankAccountServiceImpl implements OpenBankAccountService {
+
 	@Autowired
 	private OpenAnAccountForm openAnAccountForm;
-	
+
 	@Autowired
 	private BankDAO bankDAO;
-	
+
 	@Override
 	public void addNewClientToBank(OpenAnAccountForm clientForm) {
 
@@ -37,7 +37,7 @@ public class OpenAnAccountServiceImpl implements OpenAnAccountService {
 
 	@Override
 	public void enterLastname(String lastname) {
-		openAnAccountForm.setLastname(lastname);		
+		openAnAccountForm.setLastname(lastname);
 	}
 
 	@Override
@@ -59,5 +59,4 @@ public class OpenAnAccountServiceImpl implements OpenAnAccountService {
 	public OpenAnAccountForm getOpenAnAccountForm() {
 		return openAnAccountForm;
 	}
-	
 }

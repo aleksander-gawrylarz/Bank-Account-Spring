@@ -11,29 +11,29 @@ import com.bank.userUI.View;
 
 @Service
 public class SignInServiceImpl implements SignInService {
-	
+
 	@Autowired
 	private LoginForm loginForm;
-	
+
 	@Autowired
 	private BankDAO bankDAO;
-	
+
 	@Autowired
 	private BankMainUI bankMainUI;
-	
+
 	@Autowired
 	private View view;
 
 	@Override
 	public void enterUsername(String line) {
-		
+
 		char[] username = line.toCharArray();
 		loginForm.setUsername(username);
 	}
 
 	@Override
 	public void enterPassword(String line) {
-		
+
 		char[] password = line.toCharArray();
 		loginForm.setPassword(password);
 	}
@@ -44,15 +44,21 @@ public class SignInServiceImpl implements SignInService {
 	}
 
 	@Override
-	public void signIn() {
+	public boolean signIn() {
 
-		if (bankDAO.getClients().stream()
-				.anyMatch(element -> element.validateUserName(getLoginForm().getUsername())
-						&& element.validatePassword(getLoginForm().getPassword())))
+		Utility.log().info("Enter username");
+		enterUsername(Utility.userInput().nextLine());
+		Utility.log().info("Enter password");
+		enterPassword(Utility.userInput().nextLine());
+
+		if (bankDAO.getClients().stream().anyMatch(element -> element.validateUserName(getLoginForm().getUsername())
+				&& element.validatePassword(getLoginForm().getPassword()))) {
 			bankMainUI.bankMainPage(Utility.userInput());
-		else {
+			return true;
+		} else {
 			Utility.log().info("Invalid username or password");
 			view.loginPageText();
 		}
+		return false;
 	}
 }

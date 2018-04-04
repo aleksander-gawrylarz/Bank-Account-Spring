@@ -25,10 +25,8 @@ public class AccountImplTest {
 
 	@Test
 	public void newAccountStartsWithZeroBalance() {
-		
-		int expectedBalance = 0;
-		
-		assertEquals(expectedBalance, account.checkBalance(), 0.01);
+
+		assertEquals(0, account.checkBalance(), 0.01);
 	}
 	
 	@Test
@@ -37,29 +35,33 @@ public class AccountImplTest {
 	}
 	
 	@Test
-	public void positiveDepositAmountShouldBeAddedToAccountBalanceAndReturnsTrue() {
+	public void positiveDepositAmountShouldBeAddedToAccountBalance() {
+
+		account.deposit(12.12);
+		account.deposit(10);
 		
-		double depositAmount = 34.56;
-		double nextDepositAmount = 344.01;
-		double sum = depositAmount + nextDepositAmount;
+		assertEquals(22.12, account.checkBalance(), 0.01);
 		
-		account.deposit(depositAmount);
-		account.deposit(nextDepositAmount);
-		
-		assertEquals(sum, account.checkBalance(), 0.01);
-		assertTrue(account.deposit(depositAmount));
-		assertTrue(account.deposit(nextDepositAmount));
 	}
 	
 	@Test
-	public void negativeDepositAmountGetsRejectedAndReturnsFalse() {
+	public void positiveDepositReturnsTrue() {
 		
-		double depositAmount = -342.87;
-		
-		account.deposit(depositAmount);
+		assertTrue(account.deposit(20));
+	}
+	
+	@Test
+	public void negativeDepositIsNotAddedToAccountBalance() {
+
+		account.deposit(-324.56);
 
 		assertEquals(0, account.checkBalance(), 0.01);
-		assertFalse(account.deposit(depositAmount));
+	}
+	
+	@Test
+	public void negativeDepositReturnsFalse() {
+
+		assertFalse(account.deposit(-12));
 	}
 	
 	@Test
@@ -72,58 +74,56 @@ public class AccountImplTest {
 	}
 	
 	@Test
-	public void withdrawAllMethodReturnsAllBalanceAndSetsNewBalanceToZero() {
+	public void withdrawAllMethodReturnsAllBalance() {
 		
-		double depositAmount = 422.87;
-		double nextDepositAmount = 741.01;
-		double sum = depositAmount + nextDepositAmount;
-		account.deposit(depositAmount);
-		account.deposit(nextDepositAmount);
+		account.deposit(12.12);
+		account.deposit(10);
 
-		assertEquals(sum, account.withdrawAll(), 0.01);
+		assertEquals(22.12, account.withdrawAll(), 0.01);
+	}
+	
+	@Test
+	public void withdrawAllMethodSetsNewBalanceToZero() {
+		
+		account.deposit(12.12);
+		account.deposit(10);
+		
+		account.withdrawAll();
+
 		assertEquals(0, account.getBalance());
 	}
 	
 	@Test
 	public void withdrawShouldSubtractAmountFromBalanceAndReturnTrue() {
 		
-		double depositAmount = 23.87;
-		double amountToWithdraw = 3.87;
-		double subtract = depositAmount - amountToWithdraw;
-		account.deposit(depositAmount);
-		account.withdraw(amountToWithdraw);
+		account.deposit(34.12);
+		account.withdraw(4.10);
 		
-		assertEquals(subtract, account.checkBalance(), 0.01);
-		assertTrue(account.withdraw(amountToWithdraw));
+		assertEquals(30.02, account.checkBalance(), 0.01);
+		assertTrue(account.withdraw(4.10));
 	}
 	
 	@Test
 	public void whenTryingToWithdrawMoreThanActualBalanceReturnFalse() {
 		
-		double depositAmount = 23.87;
-		double amountToWithdraw = 312.87;
-		account.deposit(depositAmount);
-		account.withdraw(amountToWithdraw);
+		account.deposit(100.23);
 		
-		assertFalse(account.withdraw(amountToWithdraw));
+		assertFalse(account.withdraw(200));
 	}
 	
 	@Test
 	public void whenTryingToWithdrawMoreThanActualBalanceThenBalanceStaysUnchanged() {
 		
-		double depositAmount = 23.87;
-		double amountToWithdraw = 312.87;
-		account.deposit(depositAmount);
-		account.withdraw(amountToWithdraw);
+		account.deposit(20.1);
+		account.withdraw(100);
 		
-		assertEquals(depositAmount, account.checkBalance(), 0.01);
+		assertEquals(20.1, account.checkBalance(), 0.01);
 	}
 	
 	@Test
 	public void whenTryingToWithdrawNegativeAmountThenReturnFalse() {
 		
-		double amountToWithdraw = -312.87;
-		assertFalse(account.withdraw(amountToWithdraw));
+		assertFalse(account.withdraw(-312));
 	}
 	
 	@Test

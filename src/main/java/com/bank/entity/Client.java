@@ -17,6 +17,8 @@ public class Client {
 	
 	private List<Account> accountsList = new ArrayList<>();
 	
+	private List<Transaction> transcationList = new ArrayList<>();
+	
 	public Client() {
 		
 	}
@@ -78,6 +80,10 @@ public class Client {
 	
 	public List<Account> getAccountsList() {
 		return accountsList;
+	}
+
+	public List<Transaction> getTranscationList() {
+		return transcationList;
 	}
 
 	@Override

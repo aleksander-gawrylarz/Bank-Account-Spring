@@ -2,7 +2,7 @@ package com.bank.service;
 
 import com.bank.form.OpenAnAccountForm;
 
-public interface OpenAnAccountService {
+public interface OpenBankAccountService {
 
 	public void enterFirstname(String firstname);
 
@@ -17,5 +17,5 @@ public interface OpenAnAccountService {
 	public OpenAnAccountForm getOpenAnAccountForm();
 
 	public void addNewClientToBank(OpenAnAccountForm clientForm);
-	
+
 }

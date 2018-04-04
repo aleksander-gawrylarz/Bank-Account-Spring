@@ -32,7 +32,7 @@ public class CheckingAccountServiceImplTest {
 		bankDAO.getLoginForm().setUsername(new char[] {'j','o','h','n','7','5'});
 		bankDAO.getLoginForm().setPassword(new char[] {'p','a','s','s','7','5'});
 		
-		bankDAO.getClient().getAccountsList().clear();
+		bankDAO.getClientAccounts().clear();
 	}
 
 	
@@ -40,17 +40,17 @@ public class CheckingAccountServiceImplTest {
 	public void whenCreatingNewAccountThenSizeOfAccountsListIsIncreasedByOne() {
 		
 		checkingAccountService.createNewAccount("PLN");
-		assertEquals(1, bankDAO.getClient().getAccountsList().size());
+		assertEquals(1, bankDAO.getClientAccounts().size());
 		
 		checkingAccountService.createNewAccount("EUR");
-		assertEquals(2, bankDAO.getClient().getAccountsList().size());
+		assertEquals(2, bankDAO.getClientAccounts().size());
 	}
 	
 	@Test
 	public void stringPassedAsArgumentToCreateNewAccountMethodSetsTheCurrencyOfNewAccount() {
 		
 		checkingAccountService.createNewAccount("USD");
-		assertTrue(bankDAO.getClient().getAccountsList().get(0).getCurrency().equals("USD"));
+		assertTrue(bankDAO.getClientAccounts().get(0).getCurrency().equals("USD"));
 	}
 
 }

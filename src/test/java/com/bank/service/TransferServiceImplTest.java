@@ -2,10 +2,6 @@ package com.bank.service;
 
 import static org.junit.Assert.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,16 +19,13 @@ public class TransferServiceImplTest {
 
 	@Autowired
 	private TransferService transferService;
-	
-	@Autowired
-	private CashService cashService;
-	
+
 	@Autowired
 	private CheckingAccountService checkingAccountService;
 	
 	@Autowired
 	private BankDAO bankDAO;
-	
+
 	@Before
 	public void setUp() throws Exception {
 		bankDAO.getClients().add(new Client("John", "Doe", "johnD@gmail.com", new char[] {'j','o','h','n','7','5'}, 
@@ -41,112 +34,367 @@ public class TransferServiceImplTest {
 		bankDAO.getLoginForm().setUsername(new char[] {'j','o','h','n','7','5'});
 		bankDAO.getLoginForm().setPassword(new char[] {'p','a','s','s','7','5'});
 		
-		bankDAO.getClients().get(0).getAccountsList().clear();
+		bankDAO.getClientAccounts().clear();
 		
 		checkingAccountService.createNewAccount("PLN");
 		checkingAccountService.createNewAccount("PLN");
 		checkingAccountService.createNewAccount("EUR");
 		
-		bankDAO.getClients().get(0).getAccountsList().get(0).setAccountName("Account 1");
-		bankDAO.getClients().get(0).getAccountsList().get(1).setAccountName("Account 2");
-		bankDAO.getClients().get(0).getAccountsList().get(2).setAccountName("Account 3");
-		bankDAO.getClients().get(0).getAccountsList().get(0).withdrawAll();
-		bankDAO.getClients().get(0).getAccountsList().get(1).withdrawAll();
-		bankDAO.getClients().get(0).getAccountsList().get(2).withdrawAll();
-		cashService.deposit(Arrays.asList("Account 1", "100"));
+		bankDAO.getClientAccounts().get(0).setAccountName("Account 1");
+		bankDAO.getClientAccounts().get(1).setAccountName("Account 2");
+		bankDAO.getClientAccounts().get(2).setAccountName("Account 3");
+		bankDAO.getClientAccounts().get(0).withdrawAll();
+		bankDAO.getClientAccounts().get(1).withdrawAll();
+		bankDAO.getClientAccounts().get(2).withdrawAll();
+		transferService.deposit("Account 1", 100);
+		
+		bankDAO.getClientTransactions().clear();
 	}
 
 	@Test
 	public void checkIfNamesAreSetForAccounts() {
 		
-		assertTrue(bankDAO.getClients().get(0).getAccountsList().get(0).getAccountName().equals("Account 1"));
-		assertTrue(bankDAO.getClients().get(0).getAccountsList().get(1).getAccountName().equals("Account 2"));
-		assertTrue(bankDAO.getClients().get(0).getAccountsList().get(2).getAccountName().equals("Account 3"));
+		assertTrue(bankDAO.getClientAccounts().get(0).getAccountName().equals("Account 1"));
+		assertTrue(bankDAO.getClientAccounts().get(1).getAccountName().equals("Account 2"));
+		assertTrue(bankDAO.getClientAccounts().get(2).getAccountName().equals("Account 3"));
 	}
 	
 	@Test
 	public void checkIfBalanceIsSetForAccounts() {
 		
-		assertEquals(100, bankDAO.getClients().get(0).getAccountsList().get(0).checkBalance(), 0.01);
-		assertEquals(0, bankDAO.getClients().get(0).getAccountsList().get(1).checkBalance(), 0.01);
-		assertEquals(0, bankDAO.getClients().get(0).getAccountsList().get(2).checkBalance(), 0.01);
+		assertEquals(100, bankDAO.getClientAccounts().get(0).checkBalance(), 0.01);
+		assertEquals(0, bankDAO.getClientAccounts().get(1).checkBalance(), 0.01);
+		assertEquals(0, bankDAO.getClientAccounts().get(2).checkBalance(), 0.01);
 	}
 	
 	@Test
 	public void checkIfCurrencyIsSetForAccounts() {
 		
-		assertTrue(bankDAO.getClients().get(0).getAccountsList().get(0).getCurrency().equals("PLN"));
-		assertTrue(bankDAO.getClients().get(0).getAccountsList().get(1).getCurrency().equals("PLN"));
-		assertTrue(bankDAO.getClients().get(0).getAccountsList().get(2).getCurrency().equals("EUR"));
+		assertTrue(bankDAO.getClientAccounts().get(0).getCurrency().equals("PLN"));
+		assertTrue(bankDAO.getClientAccounts().get(1).getCurrency().equals("PLN"));
+		assertTrue(bankDAO.getClientAccounts().get(2).getCurrency().equals("EUR"));
 	}
 	
 	@Test
 	public void transferShouldDecreaseSenderBalanceAndIncreaseRecipientBalanceByGivenAmount() {
 		
-		List<String> input = Arrays.asList("Account 1", "Account 2", "20");
-		transferService.transfer(input);
-		assertEquals(80, bankDAO.getClients().get(0).getAccountsList().get(0).checkBalance(), 0.01);
-		assertEquals(20, bankDAO.getClients().get(0).getAccountsList().get(1).checkBalance(), 0.01);
+		String sender = "Account 1";
+		String recipient = "Account 2";
+		double amount = 20;
+		
+		transferService.transfer(sender, recipient, amount);
+		assertEquals(80, bankDAO.getAccountByName("Account 1").checkBalance(), 0.01);
+		assertEquals(20, bankDAO.getAccountByName("Account 2").checkBalance(), 0.01);
 	}
 	
 	@Test
 	public void whenNegativeAmountIsPassedForTransferThanBalanceIsUnchanged() {
 		
-		List<String> input = Arrays.asList("Account 1", "Account 2", "-20");
-		transferService.transfer(input);
-		assertEquals(100, bankDAO.getClients().get(0).getAccountsList().get(0).checkBalance(), 0.01);
-		assertEquals(0, bankDAO.getClients().get(0).getAccountsList().get(1).checkBalance(), 0.01);
-	}
-	
-	@Test
-	public void whenWrongTypeOfAmountIsPassedForTransferThanBalanceIsUnchanged() {
+		String sender = "Account 1";
+		String recipient = "Account 2";
+		double amount = -20;
 		
-		List<String> input = Arrays.asList("Account 1", "Account 2", "my Money");
-		transferService.transfer(input);
-		assertEquals(100, bankDAO.getClients().get(0).getAccountsList().get(0).checkBalance(), 0.01);
-		assertEquals(0, bankDAO.getClients().get(0).getAccountsList().get(1).checkBalance(), 0.01);
+		transferService.transfer(sender, recipient, amount);
+		assertEquals(100, bankDAO.getAccountByName("Account 1").checkBalance(), 0.01);
+		assertEquals(0, bankDAO.getAccountByName("Account 2").checkBalance(), 0.01);
 	}
 	
 	@Test
 	public void whenTryingToTransferMoreMoneyThanActualBalanceThenBalanceIsUnchanged() {
 		
-		List<String> input = Arrays.asList("Account 1", "Account 2", "3000");
-		transferService.transfer(input);
-		assertEquals(100, bankDAO.getClients().get(0).getAccountsList().get(0).checkBalance(), 0.01);
-		assertEquals(0, bankDAO.getClients().get(0).getAccountsList().get(1).checkBalance(), 0.01);
+		String sender = "Account 1";
+		String recipient = "Account 2";
+		double amount = 3000;
+		
+		transferService.transfer(sender, recipient, amount);
+		assertEquals(100, bankDAO.getAccountByName("Account 1").checkBalance(), 0.01);
+		assertEquals(0, bankDAO.getAccountByName("Account 2").checkBalance(), 0.01);
 	}
 	
 	@Test
 	public void whenNotExistingAccountNameIsPassedThenBalanceIsUnchanged() {
 		
-		List<String> input = Arrays.asList("Account 75", "Account 2", "20");
-		transferService.transfer(input);
-		List<String> input2 = Arrays.asList("Account 23", "Account 12", "20");
-		transferService.transfer(input2);
+		String sender = "Account 75";
+		String recipient = "Account 2";
+		double amount = 20;
 		
-		assertEquals(100, bankDAO.getClients().get(0).getAccountsList().get(0).checkBalance(), 0.01);
-		assertEquals(0, bankDAO.getClients().get(0).getAccountsList().get(1).checkBalance(), 0.01);
+		transferService.transfer(sender, recipient, amount);
+		
+		sender = "Account 23";
+		recipient = "Account 12";
+		amount = 20;
+		
+		transferService.transfer(sender, recipient, amount);
+		
+		assertEquals(100, bankDAO.getAccountByName("Account 1").checkBalance(), 0.01);
+		assertEquals(0, bankDAO.getAccountByName("Account 2").checkBalance(), 0.01);
 	}
 	
 	@Test
-	public void sizeOfListPassedAsArgumentToTransferMethodMustBeThreeOtherwiseBalanceIsUnchanged() {
+	public void foreignTransferShouldDecreaseSenderBalanceAndIncreaseRecipientBalanceByExchangeRate() {
 		
-		List<String> input = Arrays.asList("Account 75", "Account 2", "20" , "45");
-		List<String> emptyList = new ArrayList<>();
-		transferService.transfer(input);
-		transferService.transfer(emptyList);
+		// 1 EUR = 4.2 PLN
 		
-		assertEquals(100, bankDAO.getClients().get(0).getAccountsList().get(0).checkBalance(), 0.01);
-		assertEquals(0, bankDAO.getClients().get(0).getAccountsList().get(1).checkBalance(), 0.01);
+		String sender = "Account 1";
+		String recipient = "Account 3";
+		double amount = 4.2;
+		
+		// PLN to EUR
+		transferService.transfer(sender, recipient, amount);
+		assertEquals(95.8, bankDAO.getAccountByName("Account 1").checkBalance(), 0.01);
+		assertEquals(1.0, bankDAO.getAccountByName("Account 3").checkBalance(), 0.01);
+		
+		sender = "Account 1";
+		recipient = "Account 3";
+		amount = 15.23;
+		
+		// PLN to EUR
+		transferService.transfer(sender, recipient, amount);
+		assertEquals(80.57, bankDAO.getAccountByName("Account 1").checkBalance(), 0.01);
+		assertEquals(4.62, bankDAO.getAccountByName("Account 3").checkBalance(), 0.01);
+		
+		sender = "Account 3";
+		recipient = "Account 1";
+		amount = 2;
+		
+		// EUR to PLN
+		transferService.transfer(sender, recipient, amount);
+		assertEquals(88.97, bankDAO.getAccountByName("Account 1").checkBalance(), 0.01);
+		assertEquals(2.62, bankDAO.getAccountByName("Account 3").checkBalance(), 0.01);
 	}
 	
 	@Test
-	public void whenAccountsForTransferHaveDifferentCurrencyThanBalanceIsUnchanged() {
+	public void afterSuccessfulTransferTransactionListSizeShouldBeTwo() {
 		
-		List<String> input = Arrays.asList("Account 1", "Account 3", "20");
-		transferService.transfer(input);
-		assertEquals(100, bankDAO.getClients().get(0).getAccountsList().get(0).checkBalance(), 0.01);
-		assertEquals(0, bankDAO.getClients().get(0).getAccountsList().get(1).checkBalance(), 0.01);
+		String sender = "Account 1";
+		String recipient = "Account 2";
+		double amount = 20;
+		
+		transferService.transfer(sender, recipient, amount);
+		
+		assertEquals(2, bankDAO.getClientTransactions().size());
 	}
 	
+	@Test
+	public void transactionVariablesShouldMatchValuesFromTransfer() {
+		
+		String sender = "Account 1";
+		String recipient = "Account 2";
+		double amount = 20;
+		
+		transferService.transfer(sender, recipient, amount);
+		
+		assertEquals(-20, bankDAO.getClientTransactions().get(0).getAmountOfMoney(), 0.01);
+		assertEquals(80, bankDAO.getClientTransactions().get(0).getBalanceAfter(), 0.01);
+		
+		assertEquals(20, bankDAO.getClientTransactions().get(1).getAmountOfMoney(), 0.01);
+		assertEquals(20, bankDAO.getClientTransactions().get(1).getBalanceAfter(), 0.01);
+		
+		assertTrue(bankDAO.getClientTransactions().get(0).getCurrency().equals("PLN"));
+		assertTrue(bankDAO.getClientTransactions().get(1).getCurrency().equals("PLN"));
+		
+		assertNotNull(bankDAO.getClientTransactions().get(0).getDateOfTransaction());
+		assertNotNull(bankDAO.getClientTransactions().get(1).getDateOfTransaction());
+		
+		assertFalse(bankDAO.getClientTransactions().get(0).getSenderAccountNo().
+				equals(bankDAO.getClientTransactions().get(1).getRecipientAccountNo()));
+	}
+	
+	@Test
+	public void eachSuccessfulTransferChangesTransactionBalanceAfterValue() {
+		
+		String sender = "Account 1";
+		String recipient = "Account 2";
+		
+		transferService.transfer(sender, recipient, 20);
+		transferService.transfer(sender, recipient, 2.5);
+		transferService.transfer(sender, recipient, 1);
+
+		assertEquals(80, bankDAO.getClientTransactions().get(0).getBalanceAfter(), 0.01);
+		assertEquals(20, bankDAO.getClientTransactions().get(1).getBalanceAfter(), 0.01);
+		assertEquals(77.5, bankDAO.getClientTransactions().get(2).getBalanceAfter(), 0.01);
+		assertEquals(22.5, bankDAO.getClientTransactions().get(3).getBalanceAfter(), 0.01);
+		assertEquals(76.5, bankDAO.getClientTransactions().get(4).getBalanceAfter(), 0.01);
+		assertEquals(23.5, bankDAO.getClientTransactions().get(5).getBalanceAfter(), 0.01);
+	}
+	
+	@Test
+	public void transactionVariablesShouldMatchValuesFromForeignTransfer() {
+		
+		// 1 EUR = 4.2 PLN
+		
+		String sender = "Account 1";
+		String recipient = "Account 3";
+		double amount = 4.2;
+		
+		transferService.transfer(sender, recipient, amount);
+		
+		assertEquals(95.8, bankDAO.getClientTransactions().get(0).getBalanceAfter(), 0.01);
+		assertEquals(1, bankDAO.getClientTransactions().get(1).getBalanceAfter(), 0.01);
+		
+		assertTrue(bankDAO.getClientTransactions().get(0).getCurrency().equals("PLN"));
+		assertTrue(bankDAO.getClientTransactions().get(1).getCurrency().equals("EUR"));
+	}
+	
+	@Test
+	public void whenClientDepositToExistingAccountCorrectAmountThenBalanceIsIncreased() {
+		
+		String accountName = "Account 1";
+		double amount = 23.56;
+		transferService.deposit(accountName, amount);
+		
+		assertEquals(123.56, bankDAO.getAccountByName("Account 1").checkBalance(), 0.01);
+	}
+	
+	@Test
+	public void whenClientTriesToDepositNegativeAmountThenBalanceIsUnchanged() {
+		
+		String accountName = "Account 1";
+		double amount = -100;
+		transferService.deposit(accountName, amount);
+		
+		assertEquals(100, bankDAO.getAccountByName("Account 1").checkBalance(), 0.01);
+		
+	}
+
+	@Test
+	public void whenClientWithdrawsfromExistingAccountCorrectAmountThenBalanceIsDecreased() {
+		
+		String accountName = "Account 1";
+		double amount = 0.56;
+		transferService.withdraw(accountName, amount);
+		
+		assertEquals(99.44, bankDAO.getAccountByName("Account 1").checkBalance(), 0.01);
+	}
+	
+	@Test
+	public void whenClientTriesToWithdrawMoreMoneyThenActualBalanceThenBalanceIsUnchanged() {
+
+		String accountName = "Account 1";
+		double amount = 1000;
+		transferService.withdraw(accountName, amount);
+		
+		assertEquals(100, bankDAO.getAccountByName("Account 1").checkBalance(), 0.01);
+	}
+	
+	@Test
+	public void whenClientTriesToWithdrawNegativeAmountThenBalanceIsUnchanged() {
+		
+		String accountName = "Account 1";
+		transferService.withdraw(accountName, -10);
+		
+		assertEquals(100, bankDAO.getAccountByName("Account 1").checkBalance(), 0.01);
+	}
+	
+	@Test
+	public void afterSuccessfulDepositTransactionListShouldNotBeEmpty() {
+		
+		String accountName = "Account 1";
+		transferService.deposit(accountName, 13.56);
+		
+		assertFalse(bankDAO.getClientTransactions().isEmpty());
+	}
+	
+	@Test
+	public void afterSuccessfulDepositAndWithdrawTransactionListSizeShouldBeTwo() {
+		
+		String accountName = "Account 1";
+		
+		transferService.deposit(accountName, 23.56);
+		transferService.withdraw(accountName, 3);
+		
+		assertEquals(2, bankDAO.getClientTransactions().size());
+	}
+	
+	@Test
+	public void transactionVariablesShouldMatchValuesFromDeposit() {
+		
+		String accountName = "Account 1";
+		double amount = 23.56;
+		transferService.deposit(accountName, amount);
+		
+		assertEquals(23.56, bankDAO.getClientTransactions().get(0).getAmountOfMoney(), 0.01);
+		assertEquals(123.56, bankDAO.getClientTransactions().get(0).getBalanceAfter(), 0.01);
+		assertTrue(bankDAO.getClientTransactions().get(0).getCurrency().equals("PLN"));
+		assertNotNull(bankDAO.getClientTransactions().get(0).getDateOfTransaction());
+		
+		assertTrue(bankDAO.getClientTransactions().get(0).getSenderAccountNo().
+				equals(bankDAO.getClientTransactions().get(0).getRecipientAccountNo()));
+	}
+	
+	@Test
+	public void transactionVariablesShouldMatchValuesFromWithdraw() {
+		
+		String accountName = "Account 1";
+		double amount = 23.56;
+		transferService.deposit(accountName, amount);
+		transferService.withdraw(accountName, 3.56);
+		
+		assertEquals(-3.56, bankDAO.getClientTransactions().get(1).getAmountOfMoney(), 0.01);
+		assertEquals(120, bankDAO.getClientTransactions().get(1).getBalanceAfter(), 0.01);
+		assertTrue(bankDAO.getClientTransactions().get(1).getCurrency().equals("PLN"));
+		assertNotNull(bankDAO.getClientTransactions().get(1).getDateOfTransaction());
+		
+		assertTrue(bankDAO.getClientTransactions().get(1).getSenderAccountNo().
+				equals(bankDAO.getClientTransactions().get(1).getRecipientAccountNo()));
+	}
+	
+	@Test
+	public void withdrawSetsTransactionAmountOfMoneyWithNegativeSign() {
+		
+		String accountName = "Account 1";
+		double amount = 20;
+		
+		transferService.deposit(accountName, amount);
+		transferService.withdraw(accountName, amount);
+		
+		assertEquals(20, bankDAO.getClientTransactions().get(0).getAmountOfMoney(), 0.01);
+		assertEquals(-20, bankDAO.getClientTransactions().get(1).getAmountOfMoney(), 0.01);
+	}
+	
+	@Test
+	public void eachSuccessfulDepositAddsNewTransactionToList() {
+		
+		String accountName = "Account 1";
+
+		transferService.deposit(accountName, 100);
+		transferService.deposit(accountName, 23.5);
+		transferService.deposit(accountName, 5.10);
+
+		assertEquals(3, bankDAO.getClientTransactions().size());
+	}
+	
+	@Test
+	public void eachSuccessfulDepositIncreasesTransactionBalanceAfterValue() {
+		
+		String accountName = "Account 1";
+		
+		transferService.deposit(accountName, 100);
+		transferService.deposit(accountName, 23.5);
+		transferService.deposit(accountName, 5.10);
+
+		assertEquals(200, bankDAO.getClientTransactions().get(0).getBalanceAfter(), 0.01);
+		assertEquals(223.5, bankDAO.getClientTransactions().get(1).getBalanceAfter(), 0.01);
+		assertEquals(228.6, bankDAO.getClientTransactions().get(2).getBalanceAfter(), 0.01);
+	}
+	
+	@Test
+	public void afterFailedDepositTransactionListShouldBeEmpty() {
+		
+		String accountName = "Account 1";
+		transferService.deposit(accountName, -20);
+		
+		assertTrue(bankDAO.getClientTransactions().isEmpty());
+	}
+	
+	@Test
+	public void afterFailedWithdrawTransactionListSizeShouldNotBeChanged() {
+		
+		String accountName = "Account 1";
+
+		transferService.withdraw(accountName, 1000);
+		transferService.withdraw(accountName, -100);
+		
+		assertEquals(0, bankDAO.getClientTransactions().size());
+	}
 }
