@@ -2,5 +2,9 @@
 ### Simulation of a bank account made using Spring framework
 ##
 Program runs in console. Simulates bank account.
+- Bank can have many clients.
+- Client can have many accounts with different currencies.
+- You may deposit, withdraw or transfer money between accounts.
+- You can browse history of all your transactions.
 ##
-![bank](https://user-images.githubusercontent.com/32308481/37929626-c2656080-3140-11e8-96f0-dfe5357a342a.gif)
+
