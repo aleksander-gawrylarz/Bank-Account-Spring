@@ -1,5 +1,6 @@
 package com.bank.entity;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -12,8 +13,8 @@ public class Transaction {
 
 	private String senderAccountNo;
 	private String recipientAccountNo;
-	private double amountOfMoney;
-	private double balanceAfter;
+	private BigDecimal amountOfMoney;
+	private BigDecimal balanceAfter;
 	private String currency;
 	private String dateOfTransaction;
 
@@ -22,7 +23,7 @@ public class Transaction {
 	}
 
 	public Transaction(String senderAccountNo, String recipientAccountNo, 
-			double amountOfMoney, double balanceAfter, String currency) {
+			BigDecimal amountOfMoney, BigDecimal balanceAfter, String currency) {
 
 		this.senderAccountNo = senderAccountNo;
 		this.recipientAccountNo = recipientAccountNo;
@@ -50,11 +51,11 @@ public class Transaction {
 		return recipientAccountNo;
 	}
 
-	public double getAmountOfMoney() {
+	public BigDecimal getAmountOfMoney() {
 		return amountOfMoney;
 	}
 
-	public double getBalanceAfter() {
+	public BigDecimal getBalanceAfter() {
 		return balanceAfter;
 	}
 

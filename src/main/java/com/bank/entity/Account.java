@@ -1,14 +1,16 @@
 package com.bank.entity;
 
+import java.math.BigDecimal;
+
 public interface Account {
 
-	public double checkBalance();
+	public BigDecimal checkBalance();
 	
 	public void setAccountName(String accountName);
 	
-	public boolean deposit(double amount);
+	public boolean deposit(BigDecimal amount);
 	
-	public boolean withdraw(double amount);
+	public boolean withdraw(BigDecimal amount);
 	
 	public String displayAccountNo();
 	
@@ -16,9 +18,9 @@ public interface Account {
 	
 	public String getAccountName();
 	
-	public long getBalance();
+	public BigDecimal getBalance();
 	
-	public double withdrawAll();
+	public BigDecimal withdrawAll();
 	
 	public String getCurrency();
 	

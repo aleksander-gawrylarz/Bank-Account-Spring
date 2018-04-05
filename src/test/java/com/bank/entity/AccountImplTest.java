@@ -2,6 +2,8 @@ package com.bank.entity;
 
 import static org.junit.Assert.*;
 
+import java.math.BigDecimal;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,7 +28,7 @@ public class AccountImplTest {
 	@Test
 	public void newAccountStartsWithZeroBalance() {
 
-		assertEquals(0, account.checkBalance(), 0.01);
+		assertEquals(0, account.checkBalance().compareTo(BigDecimal.ZERO));
 	}
 	
 	@Test
@@ -37,93 +39,84 @@ public class AccountImplTest {
 	@Test
 	public void positiveDepositAmountShouldBeAddedToAccountBalance() {
 
-		account.deposit(12.12);
-		account.deposit(10);
+		account.deposit(new BigDecimal("12.12"));
+		account.deposit(new BigDecimal("10"));
 		
-		assertEquals(22.12, account.checkBalance(), 0.01);
+		assertTrue(account.checkBalance().equals(new BigDecimal("22.12")));
 		
 	}
 	
 	@Test
 	public void positiveDepositReturnsTrue() {
 		
-		assertTrue(account.deposit(20));
+		assertTrue(account.deposit(new BigDecimal("20")));
 	}
 	
 	@Test
 	public void negativeDepositIsNotAddedToAccountBalance() {
 
-		account.deposit(-324.56);
+		account.deposit(new BigDecimal("-324.56"));
 
-		assertEquals(0, account.checkBalance(), 0.01);
+		assertEquals(0, account.checkBalance().compareTo(BigDecimal.ZERO));
 	}
 	
 	@Test
 	public void negativeDepositReturnsFalse() {
 
-		assertFalse(account.deposit(-12));
-	}
-	
-	@Test
-	public void depositMethodMultipliesAmountByHundred() {
-		
-		double depositAmount = 42.87;
-		account.deposit(depositAmount);
-
-		assertEquals(4287, account.getBalance(), 0.01);
+		assertFalse(account.deposit(new BigDecimal("-12")));
 	}
 	
 	@Test
 	public void withdrawAllMethodReturnsAllBalance() {
 		
-		account.deposit(12.12);
-		account.deposit(10);
+		account.deposit(new BigDecimal("13.12"));
+		account.deposit(new BigDecimal("10.67"));
 
-		assertEquals(22.12, account.withdrawAll(), 0.01);
+		assertTrue(account.withdrawAll().equals(new BigDecimal("23.79")));
 	}
 	
 	@Test
 	public void withdrawAllMethodSetsNewBalanceToZero() {
 		
-		account.deposit(12.12);
-		account.deposit(10);
+		account.deposit(new BigDecimal("13.12"));
+		account.deposit(new BigDecimal("10.67"));
 		
 		account.withdrawAll();
 
-		assertEquals(0, account.getBalance());
+		assertEquals(0, account.checkBalance().compareTo(BigDecimal.ZERO));
 	}
 	
 	@Test
 	public void withdrawShouldSubtractAmountFromBalanceAndReturnTrue() {
 		
-		account.deposit(34.12);
-		account.withdraw(4.10);
+		account.deposit(new BigDecimal("34.12"));
+		account.withdraw(new BigDecimal("4.10"));
 		
-		assertEquals(30.02, account.checkBalance(), 0.01);
-		assertTrue(account.withdraw(4.10));
+		assertTrue(account.checkBalance().equals(new BigDecimal("30.02")));
+		assertTrue(account.withdraw(new BigDecimal("6.67")));
 	}
 	
 	@Test
 	public void whenTryingToWithdrawMoreThanActualBalanceReturnFalse() {
 		
-		account.deposit(100.23);
+		account.deposit(new BigDecimal("100.23"));
 		
-		assertFalse(account.withdraw(200));
+		assertFalse(account.withdraw(new BigDecimal("200")));
 	}
 	
 	@Test
 	public void whenTryingToWithdrawMoreThanActualBalanceThenBalanceStaysUnchanged() {
 		
-		account.deposit(20.1);
-		account.withdraw(100);
+		account.deposit(new BigDecimal("20.10"));
+		account.withdraw(new BigDecimal("100"));
 		
-		assertEquals(20.1, account.checkBalance(), 0.01);
+		assertTrue(account.checkBalance().equals(new BigDecimal("20.10")));
 	}
 	
 	@Test
 	public void whenTryingToWithdrawNegativeAmountThenReturnFalse() {
 		
-		assertFalse(account.withdraw(-312));
+		assertFalse(account.withdraw(new BigDecimal("-312")));
 	}
 	
 	@Test

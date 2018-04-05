@@ -1,5 +1,6 @@
 package com.bank.service;
 
+import java.math.BigDecimal;
 import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,7 @@ public class TransferServiceImpl implements TransferService {
 	private View view;
 
 	@Override
-	public void transfer(String senderAccountName, String recipientAccountName, double amount) {
+	public void transfer(String senderAccountName, String recipientAccountName, BigDecimal amount) {
 
 		boolean success = true;
 
@@ -31,14 +32,14 @@ public class TransferServiceImpl implements TransferService {
 				Utility.log().info("Error - Insufficient funds or negative value passed as amount");
 				success = false;
 			} else
-				addTransferTransaction(senderAccountName, senderAccountName, (long) (-amount * 100));
+				addTransferTransaction(senderAccountName, senderAccountName, amount.multiply(new BigDecimal("-1")));
 
 			if (success) {
 				if (!checkIfTwoAccountsHaveTheSameCurrency(senderAccountName, recipientAccountName))
 					amount = setExchange(senderAccountName, recipientAccountName, amount);
 
 				bankDAO.getAccountByName(recipientAccountName).deposit(amount);
-				addTransferTransaction(senderAccountName, recipientAccountName, (long) (amount * 100));
+				addTransferTransaction(senderAccountName, recipientAccountName, amount);
 			}
 
 		} else
@@ -49,12 +50,12 @@ public class TransferServiceImpl implements TransferService {
 	}
 
 	@Override
-	public void deposit(String accountName, double amount) {
+	public void deposit(String accountName, BigDecimal amount) {
 		try {
 			if (!bankDAO.getAccountByName(accountName).deposit(amount))
 				Utility.log().info("Error - Cannot deposit negative amount");
 			else
-				addTransaction(accountName, (long) (amount * 100));
+				addTransaction(accountName, amount);
 		} catch (NoSuchElementException e) {
 			Utility.log().info("Error - Wrong account name or negative value passed as amount");
 		}
@@ -63,12 +64,12 @@ public class TransferServiceImpl implements TransferService {
 	}
 
 	@Override
-	public void withdraw(String accountName, double amount) {
+	public void withdraw(String accountName, BigDecimal amount) {
 		try {
 			if (!bankDAO.getAccountByName(accountName).withdraw(amount))
 				Utility.log().info("Error - Insufficient funds or negative value passed as amount");
 			else
-				addTransaction(accountName, (long) (-amount * 100));
+				addTransaction(accountName, amount.multiply(new BigDecimal("-1")));
 		} catch (NoSuchElementException e) {
 			Utility.log().info("Error - Wrong account name or negative value passed as amount");
 		}
@@ -76,51 +77,47 @@ public class TransferServiceImpl implements TransferService {
 		view.menuText();
 	}
 
-	private void addTransaction(String accountName, long amount) {
+	private void addTransaction(String accountName, BigDecimal amount) {
 
 		String senderAccountNo;
 		String recipientAccountNo;
-		double amountOfMoney;
-		double balanceAfter;
+		BigDecimal balanceAfter;
 		String currency;
 
 		senderAccountNo = bankDAO.getAccountByName(accountName).getAccountNo();
 
 		recipientAccountNo = senderAccountNo;
 
-		amountOfMoney = amount / 100.0;
-
 		balanceAfter = bankDAO.getAccountByName(accountName).checkBalance();
 
 		currency = bankDAO.getAccountByName(accountName).getCurrency();
-
+		
+		if (amount.compareTo(new BigDecimal("0")) != 0)
 		bankDAO.getClientTransactions()
-				.add(new Transaction(senderAccountNo, recipientAccountNo, amountOfMoney, balanceAfter, currency));
+				.add(new Transaction(senderAccountNo, recipientAccountNo, amount, balanceAfter, currency));
 	}
 
-	private void addTransferTransaction(String senderAccountName, String recipientAccountName, long amount) {
+	private void addTransferTransaction(String senderAccountName, String recipientAccountName, BigDecimal amount) {
 
 		String senderAccountNo;
 		String recipientAccountNo;
-		double amountOfMoney;
-		double balanceAfter;
+		BigDecimal balanceAfter;
 		String currency;
 
 		senderAccountNo = bankDAO.getAccountByName(senderAccountName).getAccountNo();
 
 		recipientAccountNo = bankDAO.getAccountByName(recipientAccountName).getAccountNo();
 
-		amountOfMoney = amount / 100.0;
-
-		if (amount < 0)
+		if (amount.compareTo(BigDecimal.ZERO) == -1)
 			balanceAfter = bankDAO.getAccountByName(senderAccountName).checkBalance();
 		else
 			balanceAfter = bankDAO.getAccountByName(recipientAccountName).checkBalance();
 
 		currency = bankDAO.getAccountByName(recipientAccountName).getCurrency();
 
+		if (amount.compareTo(new BigDecimal("0")) != 0)
 		bankDAO.getClientTransactions()
-				.add(new Transaction(senderAccountNo, recipientAccountNo, amountOfMoney, balanceAfter, currency));
+				.add(new Transaction(senderAccountNo, recipientAccountNo, amount, balanceAfter, currency));
 	}
 
 	private boolean checkIfTwoAccountsHaveTheSameCurrency(String accountOne, String accountTwo) {
@@ -132,12 +129,12 @@ public class TransferServiceImpl implements TransferService {
 		return false;
 	}
 
-	private double setExchange(String accountOne, String accountTwo, double toExchange) {
+	private BigDecimal setExchange(String accountOne, String accountTwo, BigDecimal toExchange) {
 
-		double exchange;
+		BigDecimal currencyOne = bankDAO.getCurrencyValue(bankDAO.getAccountByName(accountOne).getCurrency());
+		BigDecimal currencyTwo = bankDAO.getCurrencyValue(bankDAO.getAccountByName(accountTwo).getCurrency());
 
-		exchange = (bankDAO.getCurrencyValue(bankDAO.getAccountByName(accountOne).getCurrency())
-				/ bankDAO.getCurrencyValue(bankDAO.getAccountByName(accountTwo).getCurrency())) * toExchange;
+		BigDecimal exchange = (currencyOne.divide(currencyTwo, BigDecimal.ROUND_HALF_EVEN)).multiply(toExchange);
 
 		return exchange;
 	}

@@ -1,6 +1,6 @@
 package com.bank.userUI;
 
-import java.util.InputMismatchException;
+import java.math.BigDecimal;
 import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,7 +63,7 @@ public class View {
 		Utility.log().info("+------------------------------------------------------------------------------------------------------------------------------------+");
 		Utility.log().info("| Welcome: "+printClientName());
 		Utility.log().info("+------------------------------------------------------------------------------------------------------------------------------------+");
-		Utility.log().info("|                                                              History Page                                                          |");
+		Utility.log().info("|                                                          History Page                                                              |");
 		Utility.log().info("+-----------------------------------------------------------------------+----------+---------------------+---------------------------+");
 		Utility.log().info("|       Sender Account Number       |      Recipient Account Number     | Currency |         Date        |   Value (Balance After)   |");
 		Utility.log().info("+-----------------------------------+-----------------------------------+----------+---------------------+---------------------------+");
@@ -127,15 +127,15 @@ public class View {
 		return Utility.userInput().nextLine();
 	}
 	
-	public double inputAmount() {
+	public BigDecimal inputAmount() {
 		try {
 			Utility.log().info("Enter the amount of money for operation");
-			return Utility.userInput().nextDouble();
-		} catch (InputMismatchException e) {
+			return new BigDecimal(Utility.userInput().nextLine());
+		} catch (NumberFormatException e) {
 			Utility.log().info("Error - Wrong input. Enter a valid amount of money");
 		}
 
-		return 0;
+		return BigDecimal.ZERO;
 	}
 	
 	public String whatCurrency() {

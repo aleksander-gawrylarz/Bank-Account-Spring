@@ -2,6 +2,8 @@ package com.bank.service;
 
 import static org.junit.Assert.*;
 
+import java.math.BigDecimal;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,7 +48,7 @@ public class TransferServiceImplTest {
 		bankDAO.getClientAccounts().get(0).withdrawAll();
 		bankDAO.getClientAccounts().get(1).withdrawAll();
 		bankDAO.getClientAccounts().get(2).withdrawAll();
-		transferService.deposit("Account 1", 100);
+		transferService.deposit("Account 1", new BigDecimal("100.00"));
 		
 		bankDAO.getClientTransactions().clear();
 	}
@@ -62,9 +64,9 @@ public class TransferServiceImplTest {
 	@Test
 	public void checkIfBalanceIsSetForAccounts() {
 		
-		assertEquals(100, bankDAO.getClientAccounts().get(0).checkBalance(), 0.01);
-		assertEquals(0, bankDAO.getClientAccounts().get(1).checkBalance(), 0.01);
-		assertEquals(0, bankDAO.getClientAccounts().get(2).checkBalance(), 0.01);
+		assertTrue(bankDAO.getClientAccounts().get(0).checkBalance().equals(new BigDecimal("100.00")));
+		assertTrue(bankDAO.getClientAccounts().get(1).checkBalance().equals(new BigDecimal("0.00")));
+		assertTrue(bankDAO.getClientAccounts().get(2).checkBalance().equals(new BigDecimal("0.00")));
 	}
 	
 	@Test
@@ -80,11 +82,11 @@ public class TransferServiceImplTest {
 		
 		String sender = "Account 1";
 		String recipient = "Account 2";
-		double amount = 20;
+		BigDecimal amount = new BigDecimal("20.00");
 		
 		transferService.transfer(sender, recipient, amount);
-		assertEquals(80, bankDAO.getAccountByName("Account 1").checkBalance(), 0.01);
-		assertEquals(20, bankDAO.getAccountByName("Account 2").checkBalance(), 0.01);
+		assertTrue(bankDAO.getAccountByName("Account 1").checkBalance().equals(new BigDecimal("80.00")));
+		assertTrue(bankDAO.getAccountByName("Account 2").checkBalance().equals(new BigDecimal("20.00")));
 	}
 	
 	@Test
@@ -92,11 +94,11 @@ public class TransferServiceImplTest {
 		
 		String sender = "Account 1";
 		String recipient = "Account 2";
-		double amount = -20;
+		BigDecimal amount = new BigDecimal("-20.00");
 		
 		transferService.transfer(sender, recipient, amount);
-		assertEquals(100, bankDAO.getAccountByName("Account 1").checkBalance(), 0.01);
-		assertEquals(0, bankDAO.getAccountByName("Account 2").checkBalance(), 0.01);
+		assertTrue(bankDAO.getAccountByName("Account 1").checkBalance().equals(new BigDecimal("100.00")));
+		assertTrue(bankDAO.getAccountByName("Account 2").checkBalance().equals(new BigDecimal("0.00")));
 	}
 	
 	@Test
@@ -104,11 +106,11 @@ public class TransferServiceImplTest {
 		
 		String sender = "Account 1";
 		String recipient = "Account 2";
-		double amount = 3000;
+		BigDecimal amount = new BigDecimal("3000.00");
 		
 		transferService.transfer(sender, recipient, amount);
-		assertEquals(100, bankDAO.getAccountByName("Account 1").checkBalance(), 0.01);
-		assertEquals(0, bankDAO.getAccountByName("Account 2").checkBalance(), 0.01);
+		assertTrue(bankDAO.getAccountByName("Account 1").checkBalance().equals(new BigDecimal("100.00")));
+		assertTrue(bankDAO.getAccountByName("Account 2").checkBalance().equals(new BigDecimal("0.00")));
 	}
 	
 	@Test
@@ -116,51 +118,51 @@ public class TransferServiceImplTest {
 		
 		String sender = "Account 75";
 		String recipient = "Account 2";
-		double amount = 20;
+		BigDecimal amount = new BigDecimal("20.00");
 		
 		transferService.transfer(sender, recipient, amount);
 		
 		sender = "Account 23";
 		recipient = "Account 12";
-		amount = 20;
+		amount = new BigDecimal("25.46");
 		
 		transferService.transfer(sender, recipient, amount);
 		
-		assertEquals(100, bankDAO.getAccountByName("Account 1").checkBalance(), 0.01);
-		assertEquals(0, bankDAO.getAccountByName("Account 2").checkBalance(), 0.01);
+		assertTrue(bankDAO.getAccountByName("Account 1").checkBalance().equals(new BigDecimal("100.00")));
+		assertTrue(bankDAO.getAccountByName("Account 2").checkBalance().equals(new BigDecimal("0.00")));
 	}
 	
 	@Test
-	public void foreignTransferShouldDecreaseSenderBalanceAndIncreaseRecipientBalanceByExchangeRate() {
+	public void foreignTransferPLNtoEUR() {
 		
 		// 1 EUR = 4.2 PLN
 		
 		String sender = "Account 1";
 		String recipient = "Account 3";
-		double amount = 4.2;
+		BigDecimal amount = new BigDecimal("15.45");
 		
 		// PLN to EUR
 		transferService.transfer(sender, recipient, amount);
-		assertEquals(95.8, bankDAO.getAccountByName("Account 1").checkBalance(), 0.01);
-		assertEquals(1.0, bankDAO.getAccountByName("Account 3").checkBalance(), 0.01);
+		assertEquals(0, bankDAO.getAccountByName("Account 1").checkBalance().compareTo(new BigDecimal("84.55")));
+		assertEquals(0, bankDAO.getAccountByName("Account 3").checkBalance().compareTo(new BigDecimal("3.71")));
+	}
+	
+	@Test
+	public void foreignTransferEURtoPLN() {
 		
-		sender = "Account 1";
-		recipient = "Account 3";
-		amount = 15.23;
+		// 1 EUR = 4.2 PLN
 		
-		// PLN to EUR
-		transferService.transfer(sender, recipient, amount);
-		assertEquals(80.57, bankDAO.getAccountByName("Account 1").checkBalance(), 0.01);
-		assertEquals(4.62, bankDAO.getAccountByName("Account 3").checkBalance(), 0.01);
+		bankDAO.getAccountByName("Account 1").withdrawAll();
+		transferService.deposit("Account 3", new BigDecimal("100.00"));
 		
-		sender = "Account 3";
-		recipient = "Account 1";
-		amount = 2;
+		String sender = "Account 3";
+		String recipient = "Account 1";
+		BigDecimal amount = new BigDecimal("3.79");
 		
 		// EUR to PLN
 		transferService.transfer(sender, recipient, amount);
-		assertEquals(88.97, bankDAO.getAccountByName("Account 1").checkBalance(), 0.01);
-		assertEquals(2.62, bankDAO.getAccountByName("Account 3").checkBalance(), 0.01);
+		assertEquals(0, bankDAO.getAccountByName("Account 3").checkBalance().compareTo(new BigDecimal("96.21")));
+		assertEquals(0, bankDAO.getAccountByName("Account 1").checkBalance().compareTo(new BigDecimal("15.92")));
 	}
 	
 	@Test
@@ -168,7 +170,7 @@ public class TransferServiceImplTest {
 		
 		String sender = "Account 1";
 		String recipient = "Account 2";
-		double amount = 20;
+		BigDecimal amount = new BigDecimal("20");
 		
 		transferService.transfer(sender, recipient, amount);
 		
@@ -176,19 +178,42 @@ public class TransferServiceImplTest {
 	}
 	
 	@Test
+	public void whenPassingZeroAsAmountForTransferTransactionListSizeShouldNotBeChanged() {
+		
+		String sender = "Account 1";
+		String recipient = "Account 2";
+		
+		transferService.transfer(sender, recipient, new BigDecimal("0"));
+		transferService.transfer(sender, recipient, BigDecimal.ZERO);
+		
+		assertEquals(0, bankDAO.getClientTransactions().size());
+	}
+	
+	@Test
+	public void whenPassingZeroAsAmountForDepositTransactionListSizeShouldNotBeChanged() {
+		
+		String account = "Account 1";
+		
+		transferService.deposit(account, new BigDecimal("0"));
+		transferService.deposit(account, BigDecimal.ZERO);
+		
+		assertEquals(0, bankDAO.getClientTransactions().size());
+	}
+	
+	@Test
 	public void transactionVariablesShouldMatchValuesFromTransfer() {
 		
 		String sender = "Account 1";
 		String recipient = "Account 2";
-		double amount = 20;
+		BigDecimal amount = new BigDecimal("20.00");
 		
 		transferService.transfer(sender, recipient, amount);
 		
-		assertEquals(-20, bankDAO.getClientTransactions().get(0).getAmountOfMoney(), 0.01);
-		assertEquals(80, bankDAO.getClientTransactions().get(0).getBalanceAfter(), 0.01);
+		assertEquals(0, bankDAO.getClientTransactions().get(0).getAmountOfMoney().compareTo(new BigDecimal("-20")));
+		assertEquals(0, bankDAO.getClientTransactions().get(0).getBalanceAfter().compareTo(new BigDecimal("80")));
 		
-		assertEquals(20, bankDAO.getClientTransactions().get(1).getAmountOfMoney(), 0.01);
-		assertEquals(20, bankDAO.getClientTransactions().get(1).getBalanceAfter(), 0.01);
+		assertEquals(0, bankDAO.getClientTransactions().get(1).getAmountOfMoney().compareTo(new BigDecimal("20")));
+		assertEquals(0, bankDAO.getClientTransactions().get(1).getBalanceAfter().compareTo(new BigDecimal("20")));
 		
 		assertTrue(bankDAO.getClientTransactions().get(0).getCurrency().equals("PLN"));
 		assertTrue(bankDAO.getClientTransactions().get(1).getCurrency().equals("PLN"));
@@ -206,16 +231,16 @@ public class TransferServiceImplTest {
 		String sender = "Account 1";
 		String recipient = "Account 2";
 		
-		transferService.transfer(sender, recipient, 20);
-		transferService.transfer(sender, recipient, 2.5);
-		transferService.transfer(sender, recipient, 1);
+		transferService.transfer(sender, recipient, new BigDecimal("20.00"));
+		transferService.transfer(sender, recipient, new BigDecimal("2.50"));
+		transferService.transfer(sender, recipient, new BigDecimal("1.00"));
 
-		assertEquals(80, bankDAO.getClientTransactions().get(0).getBalanceAfter(), 0.01);
-		assertEquals(20, bankDAO.getClientTransactions().get(1).getBalanceAfter(), 0.01);
-		assertEquals(77.5, bankDAO.getClientTransactions().get(2).getBalanceAfter(), 0.01);
-		assertEquals(22.5, bankDAO.getClientTransactions().get(3).getBalanceAfter(), 0.01);
-		assertEquals(76.5, bankDAO.getClientTransactions().get(4).getBalanceAfter(), 0.01);
-		assertEquals(23.5, bankDAO.getClientTransactions().get(5).getBalanceAfter(), 0.01);
+		assertEquals(0, bankDAO.getClientTransactions().get(0).getBalanceAfter().compareTo(new BigDecimal("80")));
+		assertEquals(0, bankDAO.getClientTransactions().get(1).getBalanceAfter().compareTo(new BigDecimal("20")));
+		assertEquals(0, bankDAO.getClientTransactions().get(2).getBalanceAfter().compareTo(new BigDecimal("77.5")));
+		assertEquals(0, bankDAO.getClientTransactions().get(3).getBalanceAfter().compareTo(new BigDecimal("22.5")));
+		assertEquals(0, bankDAO.getClientTransactions().get(4).getBalanceAfter().compareTo(new BigDecimal("76.5")));
+		assertEquals(0, bankDAO.getClientTransactions().get(5).getBalanceAfter().compareTo(new BigDecimal("23.5")));
 	}
 	
 	@Test
@@ -225,12 +250,12 @@ public class TransferServiceImplTest {
 		
 		String sender = "Account 1";
 		String recipient = "Account 3";
-		double amount = 4.2;
+		BigDecimal amount = new BigDecimal("15.45");
 		
 		transferService.transfer(sender, recipient, amount);
 		
-		assertEquals(95.8, bankDAO.getClientTransactions().get(0).getBalanceAfter(), 0.01);
-		assertEquals(1, bankDAO.getClientTransactions().get(1).getBalanceAfter(), 0.01);
+		assertEquals(0, bankDAO.getClientTransactions().get(0).getBalanceAfter().compareTo(new BigDecimal("84.55")));
+		assertEquals(0, bankDAO.getClientTransactions().get(1).getBalanceAfter().compareTo(new BigDecimal("3.71")));
 		
 		assertTrue(bankDAO.getClientTransactions().get(0).getCurrency().equals("PLN"));
 		assertTrue(bankDAO.getClientTransactions().get(1).getCurrency().equals("EUR"));
@@ -240,20 +265,20 @@ public class TransferServiceImplTest {
 	public void whenClientDepositToExistingAccountCorrectAmountThenBalanceIsIncreased() {
 		
 		String accountName = "Account 1";
-		double amount = 23.56;
+		BigDecimal amount = new BigDecimal("23.56");
 		transferService.deposit(accountName, amount);
 		
-		assertEquals(123.56, bankDAO.getAccountByName("Account 1").checkBalance(), 0.01);
+		assertEquals(0, bankDAO.getAccountByName("Account 1").checkBalance().compareTo(new BigDecimal("123.56")));
 	}
 	
 	@Test
 	public void whenClientTriesToDepositNegativeAmountThenBalanceIsUnchanged() {
 		
 		String accountName = "Account 1";
-		double amount = -100;
+		BigDecimal amount = new BigDecimal("-150.00");
 		transferService.deposit(accountName, amount);
 		
-		assertEquals(100, bankDAO.getAccountByName("Account 1").checkBalance(), 0.01);
+		assertEquals(0, bankDAO.getAccountByName("Account 1").checkBalance().compareTo(new BigDecimal("100.00")));
 		
 	}
 
@@ -261,36 +286,38 @@ public class TransferServiceImplTest {
 	public void whenClientWithdrawsfromExistingAccountCorrectAmountThenBalanceIsDecreased() {
 		
 		String accountName = "Account 1";
-		double amount = 0.56;
+		BigDecimal amount = new BigDecimal("0.56");
 		transferService.withdraw(accountName, amount);
 		
-		assertEquals(99.44, bankDAO.getAccountByName("Account 1").checkBalance(), 0.01);
+		assertEquals(0, bankDAO.getAccountByName("Account 1").checkBalance().compareTo(new BigDecimal("99.44")));
 	}
 	
 	@Test
 	public void whenClientTriesToWithdrawMoreMoneyThenActualBalanceThenBalanceIsUnchanged() {
 
 		String accountName = "Account 1";
-		double amount = 1000;
+		BigDecimal amount = new BigDecimal("1000");
 		transferService.withdraw(accountName, amount);
 		
-		assertEquals(100, bankDAO.getAccountByName("Account 1").checkBalance(), 0.01);
+		assertEquals(0, bankDAO.getAccountByName("Account 1").checkBalance().compareTo(new BigDecimal("100.00")));
 	}
 	
 	@Test
 	public void whenClientTriesToWithdrawNegativeAmountThenBalanceIsUnchanged() {
 		
 		String accountName = "Account 1";
-		transferService.withdraw(accountName, -10);
+		BigDecimal amount = new BigDecimal("-10");
+		transferService.withdraw(accountName, amount);
 		
-		assertEquals(100, bankDAO.getAccountByName("Account 1").checkBalance(), 0.01);
+		assertEquals(0, bankDAO.getAccountByName("Account 1").checkBalance().compareTo(new BigDecimal("100.00")));
 	}
 	
 	@Test
 	public void afterSuccessfulDepositTransactionListShouldNotBeEmpty() {
 		
 		String accountName = "Account 1";
-		transferService.deposit(accountName, 13.56);
+		BigDecimal amount = new BigDecimal("13.56");
+		transferService.deposit(accountName, amount);
 		
 		assertFalse(bankDAO.getClientTransactions().isEmpty());
 	}
@@ -300,8 +327,8 @@ public class TransferServiceImplTest {
 		
 		String accountName = "Account 1";
 		
-		transferService.deposit(accountName, 23.56);
-		transferService.withdraw(accountName, 3);
+		transferService.deposit(accountName, new BigDecimal("23.56"));
+		transferService.withdraw(accountName, new BigDecimal("3"));
 		
 		assertEquals(2, bankDAO.getClientTransactions().size());
 	}
@@ -310,11 +337,11 @@ public class TransferServiceImplTest {
 	public void transactionVariablesShouldMatchValuesFromDeposit() {
 		
 		String accountName = "Account 1";
-		double amount = 23.56;
+		BigDecimal amount = new BigDecimal("23.56");
 		transferService.deposit(accountName, amount);
 		
-		assertEquals(23.56, bankDAO.getClientTransactions().get(0).getAmountOfMoney(), 0.01);
-		assertEquals(123.56, bankDAO.getClientTransactions().get(0).getBalanceAfter(), 0.01);
+		assertEquals(0, bankDAO.getClientTransactions().get(0).getAmountOfMoney().compareTo(new BigDecimal("23.56")));
+		assertEquals(0, bankDAO.getClientTransactions().get(0).getBalanceAfter().compareTo(new BigDecimal("123.56")));
 		assertTrue(bankDAO.getClientTransactions().get(0).getCurrency().equals("PLN"));
 		assertNotNull(bankDAO.getClientTransactions().get(0).getDateOfTransaction());
 		
@@ -326,12 +353,12 @@ public class TransferServiceImplTest {
 	public void transactionVariablesShouldMatchValuesFromWithdraw() {
 		
 		String accountName = "Account 1";
-		double amount = 23.56;
+		BigDecimal amount = new BigDecimal("23.56");
 		transferService.deposit(accountName, amount);
-		transferService.withdraw(accountName, 3.56);
+		transferService.withdraw(accountName, new BigDecimal("3.56"));
 		
-		assertEquals(-3.56, bankDAO.getClientTransactions().get(1).getAmountOfMoney(), 0.01);
-		assertEquals(120, bankDAO.getClientTransactions().get(1).getBalanceAfter(), 0.01);
+		assertEquals(0, bankDAO.getClientTransactions().get(1).getAmountOfMoney().compareTo(new BigDecimal("-3.56")));
+		assertEquals(0, bankDAO.getClientTransactions().get(1).getBalanceAfter().compareTo(new BigDecimal("120.00")));
 		assertTrue(bankDAO.getClientTransactions().get(1).getCurrency().equals("PLN"));
 		assertNotNull(bankDAO.getClientTransactions().get(1).getDateOfTransaction());
 		
@@ -343,13 +370,13 @@ public class TransferServiceImplTest {
 	public void withdrawSetsTransactionAmountOfMoneyWithNegativeSign() {
 		
 		String accountName = "Account 1";
-		double amount = 20;
+		BigDecimal amount = new BigDecimal("23.56");
 		
 		transferService.deposit(accountName, amount);
 		transferService.withdraw(accountName, amount);
 		
-		assertEquals(20, bankDAO.getClientTransactions().get(0).getAmountOfMoney(), 0.01);
-		assertEquals(-20, bankDAO.getClientTransactions().get(1).getAmountOfMoney(), 0.01);
+		assertEquals(0, bankDAO.getClientTransactions().get(0).getAmountOfMoney().compareTo(new BigDecimal("23.56")));
+		assertEquals(0, bankDAO.getClientTransactions().get(1).getAmountOfMoney().compareTo(new BigDecimal("-23.56")));
 	}
 	
 	@Test
@@ -357,9 +384,9 @@ public class TransferServiceImplTest {
 		
 		String accountName = "Account 1";
 
-		transferService.deposit(accountName, 100);
-		transferService.deposit(accountName, 23.5);
-		transferService.deposit(accountName, 5.10);
+		transferService.deposit(accountName, new BigDecimal("100"));
+		transferService.deposit(accountName, new BigDecimal("23.5"));
+		transferService.deposit(accountName, new BigDecimal("5.10"));
 
 		assertEquals(3, bankDAO.getClientTransactions().size());
 	}
@@ -369,20 +396,20 @@ public class TransferServiceImplTest {
 		
 		String accountName = "Account 1";
 		
-		transferService.deposit(accountName, 100);
-		transferService.deposit(accountName, 23.5);
-		transferService.deposit(accountName, 5.10);
+		transferService.deposit(accountName, new BigDecimal("100"));
+		transferService.deposit(accountName, new BigDecimal("23.5"));
+		transferService.deposit(accountName, new BigDecimal("5.10"));
 
-		assertEquals(200, bankDAO.getClientTransactions().get(0).getBalanceAfter(), 0.01);
-		assertEquals(223.5, bankDAO.getClientTransactions().get(1).getBalanceAfter(), 0.01);
-		assertEquals(228.6, bankDAO.getClientTransactions().get(2).getBalanceAfter(), 0.01);
+		assertEquals(0, bankDAO.getClientTransactions().get(0).getBalanceAfter().compareTo(new BigDecimal("200")));
+		assertEquals(0, bankDAO.getClientTransactions().get(1).getBalanceAfter().compareTo(new BigDecimal("223.5")));
+		assertEquals(0, bankDAO.getClientTransactions().get(2).getBalanceAfter().compareTo(new BigDecimal("228.6")));
 	}
 	
 	@Test
 	public void afterFailedDepositTransactionListShouldBeEmpty() {
 		
 		String accountName = "Account 1";
-		transferService.deposit(accountName, -20);
+		transferService.deposit(accountName, new BigDecimal("-20"));
 		
 		assertTrue(bankDAO.getClientTransactions().isEmpty());
 	}
@@ -392,8 +419,8 @@ public class TransferServiceImplTest {
 		
 		String accountName = "Account 1";
 
-		transferService.withdraw(accountName, 1000);
-		transferService.withdraw(accountName, -100);
+		transferService.withdraw(accountName, new BigDecimal("1000"));
+		transferService.withdraw(accountName, new BigDecimal("-20"));
 		
 		assertEquals(0, bankDAO.getClientTransactions().size());
 	}

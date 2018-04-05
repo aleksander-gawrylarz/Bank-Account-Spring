@@ -1,5 +1,6 @@
 package com.bank.dao;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import com.bank.entity.Account;
@@ -21,7 +22,7 @@ public interface BankDAO {
 	
 	public LoginForm getLoginForm();
 	
-	public double getCurrencyValue(String currencyName);
+	public BigDecimal getCurrencyValue(String currencyName);
 	
 	public Account getAccountByName(String accountName);
 

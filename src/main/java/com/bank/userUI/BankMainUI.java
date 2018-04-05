@@ -1,5 +1,6 @@
 package com.bank.userUI;
 
+import java.math.BigDecimal;
 import java.util.Scanner;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +34,7 @@ public class BankMainUI {
 		
 		String accountName;
 		String recipientAccountName;
-		double amount;
+		BigDecimal amount;
 		
 		LoginUI.proceed = false;
 		view.accountListText();

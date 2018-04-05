@@ -1,5 +1,7 @@
 package com.bank.entity;
 
+import java.math.BigDecimal;
+
 import org.springframework.stereotype.Component;
 
 @Component
@@ -11,12 +13,12 @@ public class AccountImpl implements Account {
 
 	private String accountNo;
 	private String accountName;
-	private long balance;
+	private BigDecimal balance;
 	
 	private String currency = "";
 	
 	public AccountImpl() {
-		balance = 0;
+		balance = BigDecimal.ZERO;
 		accountName = "Account "+Integer.toString(accountNameSuffix);
 		accountNo = prefix + Integer.toString(suffix);
 		suffix += 3;
@@ -24,23 +26,27 @@ public class AccountImpl implements Account {
 	}
 	
 	@Override
-	public double checkBalance() {
-		return balance / 100.0;
+	public BigDecimal checkBalance() {
+		return balance.setScale(2, BigDecimal.ROUND_HALF_EVEN);
 	}
 
 	@Override
-	public boolean deposit(double amount) {
-		if (amount >= 0) {
-			balance += amount * 100;
+	public boolean deposit(BigDecimal amount) {
+		if (amount.compareTo(new BigDecimal("0")) == 1 || amount.compareTo(new BigDecimal("0")) == 0) {
+			balance = balance.add(amount);
 			return true;
 		}
 		return false;
 	}
 
 	@Override
-	public boolean withdraw(double amount) {
-		if (amount >= 0 && balance - amount * 100 >= 0) {
-			balance -= amount * 100;
+	public boolean withdraw(BigDecimal amount) {
+		BigDecimal afterWithdraw = balance.subtract(amount);
+
+		if ((amount.compareTo(new BigDecimal("0")) == 1 || amount.compareTo(new BigDecimal("0")) == 0)
+				&& (afterWithdraw.compareTo(new BigDecimal("0")) == 1
+						|| afterWithdraw.compareTo(new BigDecimal("0")) == 0)) {
+			balance = balance.subtract(amount);
 			return true;
 		}
 		return false;
@@ -70,7 +76,7 @@ public class AccountImpl implements Account {
 	}
 	
 	@Override
-	public long getBalance() {
+	public BigDecimal getBalance() {
 		return balance;
 	}
 
@@ -80,9 +86,9 @@ public class AccountImpl implements Account {
 	}
 
 	@Override
-	public double withdrawAll() {
-		double AllAmount = balance / 100.0;
-		balance = 0;
+	public BigDecimal withdrawAll() {
+		BigDecimal AllAmount = balance;
+		balance = BigDecimal.ZERO;
 		return AllAmount;
 	}
 

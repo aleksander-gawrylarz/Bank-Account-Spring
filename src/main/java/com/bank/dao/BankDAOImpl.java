@@ -1,5 +1,6 @@
 package com.bank.dao;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,7 +55,7 @@ public class BankDAOImpl implements BankDAO {
 	}
 
 	@Override
-	public double getCurrencyValue(String currencyName) {
+	public BigDecimal getCurrencyValue(String currencyName) {
 		return currencyDAO.getCurrencyValue(currencyName);
 	}
 
